@@ -152,10 +152,11 @@
     <div id="aceiteFundo" class="aceite-fundo" hidden>
       <div class="aceite" role="dialog" aria-modal="true" aria-labelledby="aceiteTitulo">
         <h2 id="aceiteTitulo">📝 Antes de inscrever seus atletas</h2>
-        <div class="sub">Autorização de uso de dados e de imagem (LGPD)</div>
+        <div class="sub">Autorização de dados e imagem (LGPD) e declaração de aptidão física</div>
         <div class="texto" id="aceiteTexto"></div>
         <div class="rodape">
           <label><input type="checkbox" id="aceiteCheck"> Li e concordo com a autorização de uso de dados e de imagem, e declaro ter a autorização dos responsáveis pelos atletas menores de idade.</label>
+          <label><input type="checkbox" id="aceiteSaude"> Declaro que os atletas estão clinicamente aptos para a atividade física e estou ciente dos riscos de lesão, conforme o item 6.</label>
           <div class="acoes">
             <button type="button" class="bt bt-claro" id="aceiteCancelar">Cancelar</button>
             <button type="button" class="bt bt-azul" id="aceiteContinuar" disabled>Concordo e continuar</button>
@@ -472,23 +473,28 @@
         "<p><b>2. Divulgação pública.</b> Nome, equipe, faixa, peso, horários e resultados do atleta serão exibidos nesta página pública. Documento, data de nascimento e telefone não são divulgados.</p>" +
         "<p><b>3. Direito de imagem.</b> Autoriza, sem custo, o uso de fotos e vídeos do atleta feitos durante o evento, para divulgação do evento e do esporte em redes sociais, site e materiais da organização.</p>" +
         "<p><b>4. Menores de 18 anos.</b> Declara ter a autorização dos pais ou responsáveis legais de cada atleta menor de idade inscrito, inclusive para o uso de imagem.</p>" +
-        "<p><b>5. Direitos do titular.</b> O atleta ou seu responsável pode pedir à organização, a qualquer momento, acesso, correção ou exclusão dos seus dados. Os dados são guardados apenas pelo tempo necessário ao evento e às obrigações legais.</p>";
+        "<p><b>5. Direitos do titular.</b> O atleta ou seu responsável pode pedir à organização, a qualquer momento, acesso, correção ou exclusão dos seus dados. Os dados são guardados apenas pelo tempo necessário ao evento e às obrigações legais.</p>" +
+        "<p><b>6. Aptidão física e riscos.</b> Em nome do atleta e, se menor de idade, também dos pais ou responsáveis legais, o professor declara que: o atleta está clinicamente apto para praticar atividade física e competir, sem restrição médica conhecida; tem ciência de que se trata de uma competição de luta, com contato físico, em que podem ocorrer lesões; caso ocorra alguma lesão, a responsabilidade é do próprio atleta ou de seus responsáveis legais; e cabe à organização de " + ev + " manter no local uma equipe médica para o primeiro atendimento e o socorro de emergência.</p>";
     }
     var aceiteFundo = document.getElementById("aceiteFundo");
     var aceiteCheck = document.getElementById("aceiteCheck");
+    var aceiteSaude = document.getElementById("aceiteSaude");
+    function atualizarBotaoAceite() { aceiteContinuar.disabled = !(aceiteCheck.checked && aceiteSaude.checked); }
     var aceiteContinuar = document.getElementById("aceiteContinuar");
     document.getElementById("linkInscricao").addEventListener("click", function (e) {
       e.preventDefault();
       document.getElementById("aceiteTexto").innerHTML = textoAceite(dados && dados.evento ? dados.evento.nome : "");
       aceiteCheck.checked = false;
+      aceiteSaude.checked = false;
       aceiteContinuar.disabled = true;
       aceiteFundo.hidden = false;
     });
-    aceiteCheck.addEventListener("change", function () { aceiteContinuar.disabled = !aceiteCheck.checked; });
+    aceiteCheck.addEventListener("change", atualizarBotaoAceite);
+    aceiteSaude.addEventListener("change", atualizarBotaoAceite);
     document.getElementById("aceiteCancelar").addEventListener("click", function () { aceiteFundo.hidden = true; });
     aceiteFundo.addEventListener("click", function (e) { if (e.target === aceiteFundo) aceiteFundo.hidden = true; });
     aceiteContinuar.addEventListener("click", function () {
-      if (!aceiteCheck.checked) return;
+      if (!aceiteCheck.checked || !aceiteSaude.checked) return;
       var link = document.getElementById("linkInscricao").href;
       aceiteFundo.hidden = true;
       if (/^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//i.test(link)) window.open(link, "_blank", "noopener");
