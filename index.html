@@ -23,7 +23,10 @@
     .evento { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .evento img { width: 52px; height: 52px; object-fit: contain; border-radius: 8px; background: #fff; }
     .evento h1 { margin: 0; font-size: 1.25rem; color: var(--azul); line-height: 1.2; text-transform: uppercase; }
-    .evento small { color: var(--azul); font-weight: 800; font-size: .85rem; letter-spacing: .3px; }
+    .evento small { color: var(--azul); font-weight: 800; font-size: .85rem; letter-spacing: .3px; display: block; }
+    .local { display: inline-block; margin-top: 6px; font-size: .85rem; font-weight: 700; line-height: 1.4; color: var(--preto); text-decoration: none; background: var(--azul-claro); border: 1px solid #bfdbfe; padding: 5px 10px; border-radius: 8px; }
+    .local:hover { background: #bfdbfe; }
+    .local b { color: var(--azul); }
     .marca { display: flex; align-items: center; gap: 10px; border: 2px solid var(--preto); border-radius: var(--raio); padding: 4px 14px 4px 6px; background: #fff; }
     .marca img { width: 60px; height: 59px; }
     .marca b { display: block; font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; line-height: 1; }
@@ -95,6 +98,7 @@
         <div>
           <h1 id="nomeEvento">Carregando evento...</h1>
           <small id="dataEvento">Acompanhamento oficial</small>
+          <a id="localEvento" class="local" href="#" target="_blank" rel="noopener" hidden></a>
         </div>
       </div>
       <div class="marca" title="G7PRO - Gestão de Eventos">
@@ -218,6 +222,15 @@
       var nome = ev.nome || "Evento";
       document.getElementById("nomeEvento").textContent = nome;
       document.getElementById("dataEvento").textContent = ev.data ? ("📅 " + ev.data) : "Acompanhamento oficial";
+      var aLocal = document.getElementById("localEvento");
+      if (ev.local) {
+        aLocal.innerHTML = "📍 " + esc(ev.local) + (ev.linkMaps ? "<br><b>🗺️ Ver no mapa</b>" : "");
+        if (ev.linkMaps && String(ev.linkMaps).indexOf("https://") === 0) { aLocal.href = ev.linkMaps; aLocal.style.cursor = "pointer"; }
+        else { aLocal.removeAttribute("href"); }
+        aLocal.hidden = false;
+      } else {
+        aLocal.hidden = true;
+      }
       document.title = nome + " - G7PRO";
       var img = document.getElementById("logoEvento");
       if (ev.logoUrl && img.getAttribute("data-src") !== ev.logoUrl) {
