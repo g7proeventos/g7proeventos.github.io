@@ -27,6 +27,8 @@
     .local { display: inline-block; margin-top: 6px; font-size: .85rem; font-weight: 700; line-height: 1.4; color: var(--preto); text-decoration: none; background: var(--azul-claro); border: 1px solid #bfdbfe; padding: 5px 10px; border-radius: 8px; }
     .local:hover { background: #bfdbfe; }
     .local b { color: var(--azul); }
+    .inscricao { display: inline-block; margin: 6px 0 0 6px; font-size: .85rem; font-weight: 800; color: #fff; background: var(--azul); padding: 6px 12px; border-radius: 8px; text-decoration: none; }
+    .inscricao:hover { background: var(--preto); }
     .marca { display: flex; align-items: center; gap: 10px; border: 2px solid var(--preto); border-radius: var(--raio); padding: 4px 14px 4px 6px; background: #fff; }
     .marca img { width: 60px; height: 59px; }
     .marca b { display: block; font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; line-height: 1; }
@@ -99,6 +101,7 @@
           <h1 id="nomeEvento">Carregando evento...</h1>
           <small id="dataEvento">Acompanhamento oficial</small>
           <a id="localEvento" class="local" href="#" target="_blank" rel="noopener" hidden></a>
+          <a id="linkInscricao" class="inscricao" href="#" target="_blank" rel="noopener" hidden>📝 Inscrever atletas (professores)</a>
         </div>
       </div>
       <div class="marca" title="G7PRO - Gestão de Eventos">
@@ -230,6 +233,13 @@
         aLocal.hidden = false;
       } else {
         aLocal.hidden = true;
+      }
+      var aInsc = document.getElementById("linkInscricao");
+      if (ev.linkInscricao && /^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//i.test(ev.linkInscricao)) {
+        aInsc.href = ev.linkInscricao;
+        aInsc.hidden = false;
+      } else {
+        aInsc.hidden = true;
       }
       document.title = nome + " - G7PRO";
       var img = document.getElementById("logoEvento");
