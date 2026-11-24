@@ -23,7 +23,7 @@
     .evento { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .evento img { width: 52px; height: 52px; object-fit: contain; border-radius: 8px; background: #fff; }
     .evento h1 { margin: 0; font-size: 1.25rem; color: var(--azul); line-height: 1.2; text-transform: uppercase; }
-    .evento small { color: var(--cinza-4); font-weight: 700; font-size: .75rem; letter-spacing: .5px; text-transform: uppercase; }
+    .evento small { color: var(--azul); font-weight: 800; font-size: .85rem; letter-spacing: .3px; }
     .marca { display: flex; align-items: center; gap: 10px; border: 2px solid var(--preto); border-radius: var(--raio); padding: 4px 14px 4px 6px; background: #fff; }
     .marca img { width: 60px; height: 59px; }
     .marca b { display: block; font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; line-height: 1; }
@@ -94,7 +94,7 @@
         <img id="logoEvento" src="logo-g7pro.png" alt="Logo do evento">
         <div>
           <h1 id="nomeEvento">Carregando evento...</h1>
-          <small>Acompanhamento oficial</small>
+          <small id="dataEvento">Acompanhamento oficial</small>
         </div>
       </div>
       <div class="marca" title="G7PRO - Gestão de Eventos">
@@ -167,7 +167,7 @@
 
     // ---------------- CARREGAMENTO ----------------
     function urlApi(extra) {
-      var base = String(CFG.URL_API || "");
+      var base = String(CFG.URL_API || "").split("#")[0].trim();
       return base + (base.indexOf("?") === -1 ? "?" : "&") + "api=publico" + (extra || "");
     }
 
@@ -217,6 +217,7 @@
       var ev = dados.evento || {};
       var nome = ev.nome || "Evento";
       document.getElementById("nomeEvento").textContent = nome;
+      document.getElementById("dataEvento").textContent = ev.data ? ("📅 " + ev.data) : "Acompanhamento oficial";
       document.title = nome + " - G7PRO";
       var img = document.getElementById("logoEvento");
       if (ev.logoUrl && img.getAttribute("data-src") !== ev.logoUrl) {
@@ -358,8 +359,7 @@
         total += lista.length;
         html += '<div class="bloco"><div class="cat-titulo">' + esc(c.categoria) + ' · ' + lista.length + ' atleta(s)</div><table><tbody>' +
           lista.map(function (a) {
-            return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span></td><td class="esconder-mobile">' + esc(a.faixa) + '</td><td class="esconder-mobile">' + esc(a.peso) + '</td>' +
-              '<td style="text-align:right">' + (a.status === "inapto" ? '<span class="selo" style="background:#fee2e2;color:#991b1b">Inapto</span>' : '<span class="selo s-enc">Apto</span>') + '</td></tr>';
+            return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span></td><td>' + esc(a.faixa) + '</td><td>' + esc(a.peso) + '</td></tr>';
           }).join("") + '</tbody></table></div>';
       });
       if (!total) return '<div class="vazio">' + (termo ? "Nenhum atleta encontrado." : "A lista de atletas aparece aqui assim que as inscrições forem confirmadas.") + '</div>';
