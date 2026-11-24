@@ -42,6 +42,17 @@
     .bt-claro:hover { background: #bfdbfe; }
 
     .zoom { position: fixed; inset: 0; background: rgba(2,6,23,.92); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; cursor: zoom-out; }
+    .aceite-fundo { position: fixed; inset: 0; background: rgba(2,6,23,.75); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 14px; }
+    .aceite { background: #fff; border-radius: 14px; max-width: 640px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; border-top: 6px solid var(--azul); }
+    .aceite h2 { margin: 0; padding: 16px 18px 6px; font-size: 1.2rem; color: var(--preto); }
+    .aceite .sub { padding: 0 18px 10px; color: var(--cinza-4); font-size: .9rem; font-weight: 600; }
+    .aceite .texto { padding: 12px 18px; overflow-y: auto; font-size: .9rem; line-height: 1.55; color: #1e293b; background: var(--cinza-1); border-top: 1px solid var(--cinza-2); border-bottom: 1px solid var(--cinza-2); }
+    .aceite .texto p { margin: 0 0 10px; }
+    .aceite .rodape { padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
+    .aceite label { display: flex; gap: 10px; align-items: flex-start; font-weight: 800; font-size: .92rem; cursor: pointer; }
+    .aceite input[type=checkbox] { width: 22px; height: 22px; flex-shrink: 0; margin-top: 1px; accent-color: var(--azul); }
+    .aceite .acoes { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .bt[disabled] { opacity: .45; cursor: not-allowed; }
     .zoom img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
 
     nav { display: flex; gap: 8px; margin: 14px 0; overflow-x: auto; }
@@ -137,6 +148,21 @@
     </section>
 
     <div id="zoomCartaz" class="zoom" hidden><img id="zoomImg" alt="Cartaz do evento"></div>
+
+    <div id="aceiteFundo" class="aceite-fundo" hidden>
+      <div class="aceite" role="dialog" aria-modal="true" aria-labelledby="aceiteTitulo">
+        <h2 id="aceiteTitulo">📝 Antes de inscrever seus atletas</h2>
+        <div class="sub">Autorização de uso de dados e de imagem (LGPD)</div>
+        <div class="texto" id="aceiteTexto"></div>
+        <div class="rodape">
+          <label><input type="checkbox" id="aceiteCheck"> Li e concordo com a autorização de uso de dados e de imagem, e declaro ter a autorização dos responsáveis pelos atletas menores de idade.</label>
+          <div class="acoes">
+            <button type="button" class="bt bt-claro" id="aceiteCancelar">Cancelar</button>
+            <button type="button" class="bt bt-azul" id="aceiteContinuar" disabled>Concordo e continuar</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <nav>
       <button class="ativo" data-aba="cronograma">🕒 Cronograma</button>
@@ -438,6 +464,36 @@
       var el = document.getElementById(id);
       el.addEventListener(el.tagName === "SELECT" ? "change" : "input", renderizar);
     });
+    // ---- Aceite LGPD antes de abrir o formulário de inscrição ----
+    function textoAceite(nomeEvento) {
+      var ev = esc(nomeEvento || "o evento");
+      return "<p>Ao inscrever atletas, o professor declara que:</p>" +
+        "<p><b>1. Dados pessoais.</b> Autoriza a organização de " + ev + " a tratar os dados informados (nome, data de nascimento, sexo, faixa, peso, equipe, documento e contato do professor) para inscrição, pesagem, montagem de chaves e lutas, cronograma, premiação e divulgação de resultados, conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018).</p>" +
+        "<p><b>2. Divulgação pública.</b> Nome, equipe, faixa, peso, horários e resultados do atleta serão exibidos nesta página pública. Documento, data de nascimento e telefone não são divulgados.</p>" +
+        "<p><b>3. Direito de imagem.</b> Autoriza, sem custo, o uso de fotos e vídeos do atleta feitos durante o evento, para divulgação do evento e do esporte em redes sociais, site e materiais da organização.</p>" +
+        "<p><b>4. Menores de 18 anos.</b> Declara ter a autorização dos pais ou responsáveis legais de cada atleta menor de idade inscrito, inclusive para o uso de imagem.</p>" +
+        "<p><b>5. Direitos do titular.</b> O atleta ou seu responsável pode pedir à organização, a qualquer momento, acesso, correção ou exclusão dos seus dados. Os dados são guardados apenas pelo tempo necessário ao evento e às obrigações legais.</p>";
+    }
+    var aceiteFundo = document.getElementById("aceiteFundo");
+    var aceiteCheck = document.getElementById("aceiteCheck");
+    var aceiteContinuar = document.getElementById("aceiteContinuar");
+    document.getElementById("linkInscricao").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("aceiteTexto").innerHTML = textoAceite(dados && dados.evento ? dados.evento.nome : "");
+      aceiteCheck.checked = false;
+      aceiteContinuar.disabled = true;
+      aceiteFundo.hidden = false;
+    });
+    aceiteCheck.addEventListener("change", function () { aceiteContinuar.disabled = !aceiteCheck.checked; });
+    document.getElementById("aceiteCancelar").addEventListener("click", function () { aceiteFundo.hidden = true; });
+    aceiteFundo.addEventListener("click", function (e) { if (e.target === aceiteFundo) aceiteFundo.hidden = true; });
+    aceiteContinuar.addEventListener("click", function () {
+      if (!aceiteCheck.checked) return;
+      var link = document.getElementById("linkInscricao").href;
+      aceiteFundo.hidden = true;
+      if (/^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//i.test(link)) window.open(link, "_blank", "noopener");
+    });
+
     document.getElementById("btnCartaz").addEventListener("click", function () {
       var src = document.getElementById("logoEvento").src;
       document.getElementById("zoomImg").src = src;
