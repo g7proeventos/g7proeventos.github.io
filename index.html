@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>G7PRO - Gestão de Eventos de Jiu-Jitsu</title>
-  <meta name="description" content="G7PRO: gestão completa de campeonatos de jiu-jitsu. Inscrições, chaves, placar eletrônico e pódio em tempo real.">
+  <title>G7PRO - Gestão de Eventos de Luta</title>
+  <meta name="description" content="G7PRO: gestão completa de eventos e campeonatos de luta. Inscrições, chaves, placar eletrônico e pódio em tempo real.">
   <meta name="theme-color" content="#0f172a">
   <meta property="og:title" content="G7PRO - Gestão de Eventos">
   <meta property="og:description" content="Do tatame ao pódio, tudo em tempo real.">
@@ -52,6 +52,10 @@
     .rotulo { font-size: .8rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: var(--azul); margin: 0 0 8px; }
     h2 { margin: 0 0 28px; font-size: 2rem; letter-spacing: -.5px; }
 
+    /* Vídeo */
+    .video-caixa { position: relative; width: 100%; max-width: 960px; aspect-ratio: 16 / 9; margin: 0 auto; border-radius: var(--raio); overflow: hidden; background: var(--preto); box-shadow: 0 12px 40px rgba(15,23,42,.25); }
+    .video-caixa iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
     /* Evento em destaque */
     .evento { background: #fff; border: 1px solid var(--cinza-2); border-left: 8px solid var(--azul); border-radius: var(--raio); padding: 22px; display: flex; gap: 26px; align-items: center; box-shadow: 0 2px 10px rgba(15,23,42,.06); }
     .evento-midia { width: 220px; height: 290px; flex-shrink: 0; border-radius: 10px; background: var(--preto); overflow: hidden; display: flex; align-items: center; justify-content: center; }
@@ -69,6 +73,9 @@
     .recurso .ico { font-size: 1.8rem; }
     .recurso h4 { margin: 8px 0 6px; font-size: 1.15rem; }
     .recurso p { margin: 0; color: var(--cinza-4); font-size: .95rem; }
+
+    .chamada-demo { margin-top: 18px; background: var(--azul-claro); border: 1px solid #bfdbfe; border-radius: var(--raio); padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .chamada-demo b { color: var(--azul); }
 
     /* Organizadores */
     .org { background: var(--preto); color: #fff; border-radius: 18px; padding: 40px; display: flex; justify-content: space-between; align-items: center; gap: 28px; flex-wrap: wrap; }
@@ -126,6 +133,7 @@
     <div class="container">
       <a class="marca" href="./"><img src="logo-g7pro.png" alt="G7PRO"><span>G7<span>PRO</span> · Gestão de Eventos</span></a>
       <nav>
+        <a href="#como-funciona">Como funciona</a>
         <a href="#eventos">Eventos</a>
         <a href="#recursos">O sistema</a>
         <a href="#organizadores">Organizadores</a>
@@ -138,16 +146,27 @@
       <img class="abertura-logo" src="logo-g7pro.png" alt="Logo G7PRO - Gestão de Eventos">
       <div>
         <h1>Do tatame ao pódio,<br><span>tudo em tempo real.</span></h1>
-        <p>O G7PRO organiza campeonatos de jiu-jitsu de ponta a ponta: inscrições, chaves, placar eletrônico e pódio em um só sistema.</p>
+        <p>O G7PRO organiza eventos e campeonatos de luta de ponta a ponta: inscrições, chaves, placar eletrônico e pódio em um só sistema.</p>
         <div class="botoes">
           <a class="bt bt-azul" href="evento/">🥋 Acompanhar o evento</a>
-          <a class="bt bt-claro" href="#organizadores">Leve o G7PRO pro seu evento</a>
+          <a class="bt bt-claro" href="#como-funciona">▶️ Ver como funciona</a>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="bloco" id="eventos">
+  <section class="bloco" id="como-funciona">
+    <div class="container">
+      <p class="rotulo">Como funciona</p>
+      <h2>Veja o G7PRO em 1 minuto</h2>
+      <div class="video-caixa">
+        <iframe src="https://www.youtube-nocookie.com/embed/NNeVAUy6Z4k?rel=0" title="G7PRO | Gestão de Eventos de Luta" loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloco" id="eventos" style="padding-top:0">
     <div class="container">
       <p class="rotulo">Eventos</p>
       <h2>Evento em destaque</h2>
@@ -197,7 +216,7 @@
             <label class="inteiro">Seu nome *<input name="nome" maxlength="80" autocomplete="name" required></label>
             <label>WhatsApp<input name="whatsapp" maxlength="25" inputmode="tel" autocomplete="tel" placeholder="(21) 99999-9999"></label>
             <label>E-mail<input name="email" type="email" maxlength="100" autocomplete="email"></label>
-            <label class="inteiro">Nome do evento<input name="evento" maxlength="100" placeholder="Ex.: Copa de Verão de Jiu-Jitsu"></label>
+            <label class="inteiro">Nome do evento<input name="evento" maxlength="100" placeholder="Ex.: Copa de Verão de Lutas"></label>
             <label>Cidade<input name="cidade" maxlength="60"></label>
             <label>Data prevista<input name="data" maxlength="30" placeholder="Ex.: março/2027"></label>
             <label>Atletas (estimativa)<input name="atletas" maxlength="10" inputmode="numeric" placeholder="Ex.: 150"></label>
@@ -210,6 +229,7 @@
                 <option>Ainda não sei</option>
               </select>
             </label>
+            <label class="inteiro">Modalidade<input name="modalidade" maxlength="40" placeholder="Ex.: jiu-jitsu, judô, MMA, muay thai"></label>
             <label class="inteiro">Mensagem<textarea name="mensagem" maxlength="1000" rows="3" placeholder="Conte um pouco sobre o evento"></textarea></label>
             <label class="armadilha" aria-hidden="true">Site<input name="site_web" tabindex="-1" autocomplete="off"></label>
             <label class="aceite inteiro"><input type="checkbox" name="lgpd" value="1"> <span>Concordo que o G7PRO use estes dados apenas para responder ao meu contato (LGPD). *</span></label>
@@ -310,7 +330,7 @@
       if (!f.lgpd.checked) return aviso("Marque a concordância com o uso dos dados para podermos responder.", false);
       if (!CFG.URL_API || CFG.URL_API.indexOf("script.google.com") === -1) return aviso("Formulário indisponível. Escreva para g7pro.gestao@gmail.com.", false);
 
-      var campos = ["nome", "whatsapp", "email", "evento", "cidade", "data", "atletas", "formato", "mensagem", "site_web"];
+      var campos = ["nome", "whatsapp", "email", "evento", "cidade", "data", "atletas", "formato", "modalidade", "mensagem", "site_web"];
       var q = "&lgpd=1";
       campos.forEach(function (n) { q += "&" + n + "=" + encodeURIComponent(v(n)); });
 
