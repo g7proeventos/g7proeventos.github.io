@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G7PRO - Gestão de Eventos</title>
+  <meta name="description" content="Cronograma, chaves, lutas e checagem de atletas do evento.">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../icone-192.png">
+  <style>
+    :root {
+      --preto: #0f172a; --preto-2: #1e293b; --azul: #1d4ed8; --azul-claro: #dbeafe; --azul-medio: #3b82f6;
+      --cinza-1: #f1f5f9; --cinza-2: #e2e8f0; --cinza-3: #94a3b8; --cinza-4: #475569;
+      --verde: #15803d; --verde-claro: #dcfce7; --amarelo: #92400e; --amarelo-claro: #fef3c7;
+      --raio: 10px;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif; background: var(--cinza-1); color: var(--preto); }
+    .container { max-width: 1200px; margin: 0 auto; padding: 12px 14px 30px; }
+
+    .barra { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--preto); color: #fff; padding: 8px 14px; border-radius: var(--raio); font-weight: 800; font-size: .9rem; }
+    .barra .marca-mini { display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; }
+    .barra img { width: 32px; height: 31px; background: #fff; border-radius: 6px; }
+    .barra .marca-mini span span { color: #60a5fa; }
+    .barra .voltar { color: #bfdbfe; text-decoration: none; font-size: .8rem; font-weight: 800; white-space: nowrap; }
+    .barra small { opacity: .75; font-weight: 700; font-size: .75rem; }
+
+    .hero { margin-top: 12px; background: #fff; border: 1px solid var(--cinza-2); border-left: 8px solid var(--azul); border-radius: 14px; padding: 20px; display: flex; gap: 24px; align-items: center; box-shadow: 0 1px 3px rgba(15,23,42,.08); }
+    .cartaz { width: 230px; height: 300px; flex-shrink: 0; border-radius: 10px; background: var(--preto); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; border: 0; padding: 0; }
+    .cartaz img, .cartaz video { width: 100%; height: 100%; object-fit: contain; }
+    .hero-info { min-width: 0; flex: 1; }
+    .hero-tag { font-size: .75rem; font-weight: 900; letter-spacing: 1px; color: var(--azul); text-transform: uppercase; }
+    .hero h1 { margin: 6px 0 10px; font-size: 2.1rem; line-height: 1.1; color: var(--preto); text-transform: uppercase; overflow-wrap: anywhere; }
+    .hero-data { font-size: 1.15rem; font-weight: 800; color: var(--azul); margin-bottom: 6px; }
+    .hero-local { font-size: 1rem; font-weight: 600; color: #334155; margin-bottom: 16px; }
+    .hero-botoes { display: flex; gap: 8px; flex-wrap: wrap; }
+    .bt { display: inline-flex; align-items: center; gap: 6px; padding: 11px 16px; border-radius: 10px; font-weight: 800; font-size: .95rem; text-decoration: none; cursor: pointer; border: 1px solid transparent; font-family: inherit; }
+    .bt-azul { background: var(--azul); color: #fff; }
+    .bt-azul:hover { background: var(--preto); }
+    .bt-claro { background: var(--azul-claro); color: var(--preto); border-color: #bfdbfe; }
+    .bt-claro:hover { background: #bfdbfe; }
+
+    .zoom { position: fixed; inset: 0; background: rgba(2,6,23,.92); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; cursor: zoom-out; }
+    .aceite-fundo { position: fixed; inset: 0; background: rgba(2,6,23,.75); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 14px; }
+    .aceite { background: #fff; border-radius: 14px; max-width: 640px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; border-top: 6px solid var(--azul); }
+    .aceite h2 { margin: 0; padding: 16px 18px 6px; font-size: 1.2rem; color: var(--preto); }
+    .aceite .sub { padding: 0 18px 10px; color: var(--cinza-4); font-size: .9rem; font-weight: 600; }
+    .aceite .texto { padding: 12px 18px; overflow-y: auto; font-size: .9rem; line-height: 1.55; color: #1e293b; background: var(--cinza-1); border-top: 1px solid var(--cinza-2); border-bottom: 1px solid var(--cinza-2); }
+    .aceite .texto p { margin: 0 0 10px; }
+    .aceite .rodape { padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
+    .aceite label { display: flex; gap: 10px; align-items: flex-start; font-weight: 800; font-size: .92rem; cursor: pointer; }
+    .aceite input[type=checkbox] { width: 22px; height: 22px; flex-shrink: 0; margin-top: 1px; accent-color: var(--azul); }
+    .aceite .acoes { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .bt[disabled] { opacity: .45; cursor: not-allowed; }
+    .zoom img, .zoom video { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+
+    nav { display: flex; gap: 8px; margin: 14px 0; overflow-x: auto; }
+    nav button { border: 1px solid var(--cinza-2); background: #fff; color: var(--cinza-4); font-weight: 800; padding: 10px 16px; border-radius: var(--raio); cursor: pointer; white-space: nowrap; font-size: .95rem; }
+    nav button.ativo { background: var(--azul); border-color: var(--azul); color: #fff; }
+
+    .filtros { background: #fff; border: 1px solid var(--cinza-2); border-radius: var(--raio); padding: 12px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .filtros select, .filtros input { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: .95rem; font-weight: 600; background: #fff; color: var(--preto); }
+    .filtros input { flex: 1; min-width: 200px; }
+    .aviso { font-size: .8rem; color: var(--cinza-4); margin: -4px 0 12px 4px; }
+
+    .bloco { background: #fff; border: 1px solid var(--cinza-2); border-radius: var(--raio); margin-bottom: 14px; overflow: hidden; }
+    .bloco-titulo { background: var(--preto); color: #fff; font-weight: 800; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .bloco-titulo small { font-weight: 700; opacity: .8; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th { text-align: left; font-size: .72rem; letter-spacing: .5px; text-transform: uppercase; color: var(--cinza-4); background: var(--cinza-1); padding: 8px 10px; }
+    td { padding: 9px 10px; border-top: 1px solid var(--cinza-2); vertical-align: middle; }
+    td.hora { font-weight: 900; font-size: 1rem; white-space: nowrap; color: var(--azul); }
+    td .eq { display: block; font-size: .75rem; color: var(--cinza-3); font-weight: 600; }
+    .vs { text-align: center; color: var(--cinza-3); font-weight: 800; width: 20px; }
+
+    .selo { display: inline-block; font-size: .72rem; font-weight: 900; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+    .s-enc { background: var(--verde-claro); color: var(--verde); }
+    .s-cham { background: var(--amarelo-claro); color: var(--amarelo); }
+    .s-prox { background: var(--azul-claro); color: var(--azul); }
+    .s-agu { background: var(--cinza-1); color: var(--cinza-4); }
+    .s-fin { background: var(--preto); color: #fff; }
+
+    .lutas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; padding: 12px; }
+    .luta { border: 1px solid var(--cinza-2); border-radius: 8px; overflow: hidden; background: #fff; }
+    .luta-topo { display: flex; justify-content: space-between; align-items: center; background: var(--cinza-1); padding: 6px 10px; font-size: .8rem; font-weight: 800; color: var(--cinza-4); gap: 8px; }
+    .atleta { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; gap: 8px; }
+    .atleta + .atleta { border-top: 1px dashed var(--cinza-2); }
+    .atleta .nome { font-weight: 800; }
+    .atleta.venceu .nome { color: var(--verde); }
+    .atleta.venceu .nome::after { content: " ✓"; }
+    .atleta.perdeu .nome { color: var(--cinza-3); }
+    .resultado { padding: 6px 10px; background: var(--verde-claro); color: var(--verde); font-size: .8rem; font-weight: 800; }
+
+    .chave-rounds { display: flex; gap: 14px; overflow-x: auto; padding: 12px; }
+    .round { min-width: 240px; display: flex; flex-direction: column; gap: 10px; justify-content: space-around; }
+    .round h4 { margin: 0 0 2px; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; color: var(--cinza-4); }
+    .podio { padding: 10px 14px; border-top: 1px solid var(--cinza-2); display: flex; gap: 18px; flex-wrap: wrap; font-weight: 800; font-size: .9rem; }
+
+    .cat-titulo { background: var(--preto-2); color: #fff; padding: 8px 14px; font-weight: 800; font-size: .85rem; }
+    .tab-atletas { table-layout: fixed; }
+    .tab-atletas td, .tab-atletas th { padding-left: 14px; padding-right: 14px; overflow-wrap: break-word; }
+    .tab-atletas col.c-sexo { width: 110px; }
+    .tab-atletas col.c-div { width: 160px; }
+    .so-mobile { display: none !important; }
+    .cat-titulo.festival { background: #7c3aed; }
+    .tab-atletas col.c-faixa { width: 150px; }
+    .tab-atletas col.c-peso { width: 125px; }
+    .tab-atletas .num { text-align: right; white-space: nowrap; }
+    .vazio { background: #fff; border-radius: var(--raio); padding: 40px 20px; text-align: center; color: var(--cinza-3); font-weight: 700; }
+    .status-linha { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .8rem; color: var(--cinza-4); margin: 0 0 10px 4px; }
+    .erro { background: #fee2e2; color: #991b1b; border-radius: var(--raio); padding: 10px 14px; font-weight: 700; margin-bottom: 12px; display: none; }
+    footer { margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--cinza-4); font-size: .85rem; border-top: 1px solid var(--cinza-2); padding-top: 14px; }
+    footer img { width: 48px; height: 47px; }
+    .rodape-texto { display: flex; flex-direction: column; gap: 2px; }
+    .rodape-contato { color: var(--azul); font-weight: 700; text-decoration: none; }
+    .rodape-contato:hover { text-decoration: underline; }
+
+    @media (max-width: 640px) {
+      .hero { flex-direction: column; align-items: stretch; text-align: center; padding: 16px; gap: 14px; }
+      .cartaz { width: 100%; max-width: 320px; height: 380px; margin: 0 auto; }
+      .hero h1 { font-size: 1.6rem; }
+      .hero-botoes { justify-content: center; }
+      .bt { flex: 1 1 100%; justify-content: center; }
+      .barra small { display: none; }
+      .esconder-mobile { display: none; }
+      td, th { padding: 7px 6px; }
+      .tab-atletas col.c-sexo, .tab-atletas col.c-div { width: 0; }
+      td .so-mobile { display: block !important; color: var(--azul); }
+      .tab-atletas td, .tab-atletas th { padding-left: 8px; padding-right: 8px; }
+      .tab-atletas col.c-faixa { width: 88px; }
+      .tab-atletas col.c-peso { width: 100px; }
+      .tab-atletas td { font-size: .82rem; }
+    }
+    @media print {
+      body { background: #fff; }
+      .barra, .hero-botoes, .cartaz, nav, .filtros, .status-linha, .erro, footer, #aba-chaves, #aba-atletas { display: none !important; }
+      #aba-cronograma { display: block !important; }
+      .hero { border: 0; box-shadow: none; padding: 0 0 10px; }
+      .bloco { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="barra">
+      <a class="marca-mini" href="../" title="Página inicial do G7PRO"><img src="../logo-g7pro.png" alt="G7PRO"><span>G7<span>PRO</span> · Gestão de Eventos</span></a>
+      <a class="voltar" href="../">← Página inicial</a>
+    </div>
+
+    <section class="hero">
+      <button type="button" class="cartaz" id="btnCartaz" title="Ver cartaz em tela cheia">
+        <img id="logoEvento" src="../logo-g7pro.png" alt="Cartaz do evento">
+        <video id="videoEvento" muted autoplay loop playsinline preload="auto" hidden aria-label="Vídeo do evento"></video>
+      </button>
+      <div class="hero-info">
+        <div class="hero-tag">Evento oficial</div>
+        <h1 id="nomeEvento">Carregando evento...</h1>
+        <div class="hero-data" id="dataEvento" hidden></div>
+        <div class="hero-local" id="localEvento" hidden></div>
+        <div class="hero-botoes">
+          <a id="linkInscricao" class="bt bt-azul" href="#" target="_blank" rel="noopener" hidden>📝 Inscrever atletas</a>
+          <a id="linkMapa" class="bt bt-claro" href="#" target="_blank" rel="noopener" hidden>🗺️ Como chegar</a>
+          <button type="button" id="btnImprimir" class="bt bt-claro">📄 Cronograma em PDF</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="zoomCartaz" class="zoom" hidden><img id="zoomImg" alt="Cartaz do evento"><video id="zoomVideo" controls playsinline loop hidden></video></div>
+
+    <div id="aceiteFundo" class="aceite-fundo" hidden>
+      <div class="aceite" role="dialog" aria-modal="true" aria-labelledby="aceiteTitulo">
+        <h2 id="aceiteTitulo">📝 Antes de inscrever seus atletas</h2>
+        <div class="sub">Autorização de dados e imagem (LGPD) e declaração de aptidão física</div>
+        <div class="texto" id="aceiteTexto"></div>
+        <div class="rodape">
+          <label><input type="checkbox" id="aceiteCheck"> Li e concordo com a autorização de uso de dados e de imagem, e declaro ter a autorização dos responsáveis pelos atletas menores de idade.</label>
+          <label><input type="checkbox" id="aceiteSaude"> Declaro que os atletas estão clinicamente aptos para a atividade física e estou ciente dos riscos de lesão, conforme o item 6.</label>
+          <div class="acoes">
+            <button type="button" class="bt bt-claro" id="aceiteCancelar">Cancelar</button>
+            <button type="button" class="bt bt-azul" id="aceiteContinuar" disabled>Concordo e continuar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <nav>
+      <button class="ativo" data-aba="cronograma">🕒 Cronograma</button>
+      <button data-aba="chaves">🥊 Chaves e Lutas</button>
+      <button data-aba="atletas">👥 Checagem de Atletas</button>
+    </nav>
+
+    <div id="erro" class="erro"></div>
+    <div class="status-linha"><span id="txtAtualizado">Carregando...</span><span id="txtTotal"></span></div>
+
+    <section id="aba-cronograma">
+      <div class="filtros">
+        <select id="fAreaCrono"><option value="TODAS">Todas as áreas</option></select>
+        <input id="fBuscaCrono" type="search" placeholder="🔍 Buscar atleta ou equipe">
+      </div>
+      <div class="aviso">Os horários são previsões e podem mudar conforme o andamento do evento. Chegue com antecedência.</div>
+      <div id="conteudoCrono"></div>
+    </section>
+
+    <section id="aba-chaves" hidden>
+      <div class="filtros">
+        <select id="fAreaChaves"><option value="TODAS">Todas as áreas</option></select>
+        <input id="fBuscaChaves" type="search" placeholder="🔍 Buscar categoria ou atleta">
+      </div>
+      <div id="conteudoChaves"></div>
+    </section>
+
+    <section id="aba-atletas" hidden>
+      <div class="filtros">
+        <input id="fBuscaAtletas" type="search" placeholder="🔍 Buscar atleta ou equipe">
+      </div>
+      <div id="conteudoAtletas"></div>
+    </section>
+
+    <footer>
+      <img src="../logo-g7pro.png" alt="G7PRO">
+      <div class="rodape-texto">
+        <span>Sistema <strong>G7PRO - Gestão de Eventos</strong></span>
+        <a class="rodape-contato" href="mailto:g7pro.gestao@gmail.com?subject=Contato%20pelo%20site%20G7PRO">✉️ g7pro.gestao@gmail.com</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="../config.js"></script>
+  <script>
+  (function () {
+    var CFG = window.G7PRO_CONFIG || {};
+    var dados = null;
+    var abaAtual = "cronograma";
+
+    function esc(v) {
+      return String(v === null || v === undefined ? "" : v)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function minutos(h) {
+      var m = String(h || "").match(/(\d{1,2}):(\d{2})/);
+      return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 99999;
+    }
+    function hora(h) { return h ? esc(String(h).replace(":", "h")) : "--"; }
+    function num4(n) { return ("0000" + (parseInt(n, 10) || 0)).slice(-4); }
+    function norm(s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+    function definido(n) {
+      var s = String(n || "").toUpperCase();
+      return s && s !== "BYE" && s.indexOf("VENCEDOR") === -1 && s.indexOf("AGUARDANDO") === -1;
+    }
+
+    // ---------------- CARREGAMENTO ----------------
+    function urlApi(extra) {
+      var base = String(CFG.URL_API || "").split("#")[0].trim();
+      return base + (base.indexOf("?") === -1 ? "?" : "&") + "api=publico" + (extra || "");
+    }
+
+    function carregarJsonp() {
+      return new Promise(function (resolve, reject) {
+        var nome = "g7cb_" + Date.now();
+        var s = document.createElement("script");
+        var t = setTimeout(function () { limpar(); reject(new Error("tempo esgotado")); }, 20000);
+        function limpar() { clearTimeout(t); try { delete window[nome]; } catch (e) { window[nome] = undefined; } if (s.parentNode) s.parentNode.removeChild(s); }
+        window[nome] = function (d) { limpar(); resolve(d); };
+        s.onerror = function () { limpar(); reject(new Error("falha de rede")); };
+        s.src = urlApi("&callback=" + nome + "&t=" + Date.now());
+        document.body.appendChild(s);
+      });
+    }
+
+    function carregar() {
+      if (!CFG.URL_API || CFG.URL_API.indexOf("script.google.com") === -1) {
+        mostrarErro("Configure o link do sistema no arquivo config.js.");
+        return;
+      }
+      fetch(urlApi("&t=" + Date.now()), { method: "GET", redirect: "follow" })
+        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .catch(function () { return carregarJsonp(); })
+        .then(function (d) {
+          if (!d || d.sucesso === false) throw new Error((d && d.mensagem) || "sem dados");
+          dados = d;
+          mostrarErro("");
+          aplicarEvento();
+          preencherAreas();
+          renderizar();
+          var agora = new Date();
+          document.getElementById("txtAtualizado").textContent = "Atualizado às " + ("0" + agora.getHours()).slice(-2) + ":" + ("0" + agora.getMinutes()).slice(-2) + " · atualiza sozinho";
+        })
+        .catch(function () {
+          mostrarErro(dados ? "Sem conexão no momento. Mostrando os últimos dados recebidos." : "Não foi possível carregar os dados do evento. Tentando de novo...");
+        });
+    }
+
+    function mostrarErro(msg) {
+      var el = document.getElementById("erro");
+      el.textContent = msg;
+      el.style.display = msg ? "block" : "none";
+    }
+
+    function aplicarEvento() {
+      var ev = dados.evento || {};
+      var nome = ev.nome || "Evento";
+      document.getElementById("nomeEvento").textContent = nome;
+      var elData = document.getElementById("dataEvento");
+      var txtData = ev.data ? ("📅 " + ev.data + (ev.horaInicio ? " · a partir das " + String(ev.horaInicio).replace(":", "h") : "")) : "";
+      elData.textContent = txtData;
+      elData.hidden = !txtData;
+      var elLocal = document.getElementById("localEvento");
+      elLocal.textContent = ev.local ? ("📍 " + ev.local) : "";
+      elLocal.hidden = !ev.local;
+      var aMapa = document.getElementById("linkMapa");
+      if (ev.linkMaps && String(ev.linkMaps).indexOf("https://") === 0) { aMapa.href = ev.linkMaps; aMapa.hidden = false; }
+      else { aMapa.hidden = true; }
+      var aInsc = document.getElementById("linkInscricao");
+      if (ev.linkInscricao && /^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//i.test(ev.linkInscricao)) {
+        aInsc.href = ev.linkInscricao;
+        aInsc.hidden = false;
+      } else {
+        aInsc.hidden = true;
+      }
+      document.title = nome + " - G7PRO";
+      var img = document.getElementById("logoEvento");
+      if (ev.logoUrl && img.getAttribute("data-src") !== ev.logoUrl) {
+        img.setAttribute("data-src", ev.logoUrl);
+        img.onerror = function () { img.src = "../logo-g7pro.png"; };
+        img.src = ev.logoUrl;
+      }
+      document.getElementById("txtTotal").textContent = (dados.atletas && dados.atletas.total ? dados.atletas.total + " atletas inscritos" : "");
+    }
+
+    function preencherAreas() {
+      var total = Math.max(1, (dados.evento && dados.evento.totalAreas) || 1);
+      (dados.chaves || []).forEach(function (c) { if (c.area > total) total = c.area; });
+      ["fAreaCrono", "fAreaChaves"].forEach(function (id) {
+        var sel = document.getElementById(id), atual = sel.value || "TODAS";
+        var h = '<option value="TODAS">Todas as áreas</option>';
+        for (var a = 1; a <= total; a++) h += '<option value="' + a + '">Área ' + a + '</option>';
+        sel.innerHTML = h;
+        sel.value = (atual === "TODAS" || parseInt(atual, 10) <= total) ? atual : "TODAS";
+      });
+    }
+
+    // ---------------- ABA CRONOGRAMA (só horário previsto) ----------------
+    function renderCronograma() {
+      var area = document.getElementById("fAreaCrono").value;
+      var termo = norm(document.getElementById("fBuscaCrono").value.trim());
+      var porArea = {};
+      (dados.chaves || []).forEach(function (ch) {
+        if (area !== "TODAS" && String(ch.area) !== area) return;
+        (ch.lutas || []).forEach(function (l) {
+          if (l.bye || (!l.nome1 && !l.nome2)) return;
+          if (termo && norm(l.nome1 + " " + l.nome2 + " " + l.equipe1 + " " + l.equipe2).indexOf(termo) === -1) return;
+          (porArea[ch.area] = porArea[ch.area] || []).push({ l: l, cat: ch.categoria });
+        });
+      });
+      var areas = Object.keys(porArea).map(Number).sort(function (a, b) { return a - b; });
+      if (!areas.length) return '<div class="vazio">' + (termo ? "Nenhuma luta encontrada para esta busca." : "O cronograma será publicado assim que as lutas forem definidas.") + '</div>';
+      return areas.map(function (a) {
+        var lista = porArea[a].sort(function (x, y) { return (minutos(x.l.horaPrevista) - minutos(y.l.horaPrevista)) || (x.l.numLuta - y.l.numLuta); });
+        var linhas = lista.map(function (it) {
+          var l = it.l;
+          return '<tr><td class="hora">' + hora(l.horaPrevista) + '</td><td class="esconder-mobile">#' + num4(l.numLuta) + '</td>' +
+            '<td><b>' + esc(l.nome1) + '</b><span class="eq">' + esc(l.equipe1) + '</span></td><td class="vs">x</td>' +
+            '<td><b>' + esc(l.nome2) + '</b><span class="eq">' + esc(l.equipe2) + '</span></td>' +
+            '<td class="esconder-mobile" style="font-size:.8rem">' + esc(it.cat) + '</td></tr>';
+        }).join("");
+        return '<div class="bloco"><div class="bloco-titulo">📍 Área ' + a + '<small>' + lista.length + ' luta(s)</small></div>' +
+          '<table><thead><tr><th>Previsão</th><th class="esconder-mobile">Luta</th><th>Atleta</th><th></th><th>Atleta</th><th class="esconder-mobile">Categoria</th></tr></thead><tbody>' + linhas + '</tbody></table></div>';
+      }).join("");
+    }
+
+    // ---------------- ABA CHAVES E LUTAS (andamento) ----------------
+    function seloLuta(l, ehProxima) {
+      if (l.encerrada) return '<span class="selo s-enc">Encerrada</span>';
+      if (l.chamada) return '<span class="selo s-cham">📣 Chamada</span>';
+      if (ehProxima) return '<span class="selo s-prox">▶ Próxima</span>';
+      return '<span class="selo s-agu">Aguardando</span>';
+    }
+    function cartaoLuta(l, ehProxima) {
+      var v1 = l.encerrada && l.vencedor && l.vencedor === l.nome1;
+      var v2 = l.encerrada && l.vencedor && l.vencedor === l.nome2;
+      var cl1 = l.encerrada ? (v1 ? "venceu" : (v2 ? "perdeu" : "")) : "";
+      var cl2 = l.encerrada ? (v2 ? "venceu" : (v1 ? "perdeu" : "")) : "";
+      return '<div class="luta"><div class="luta-topo"><span>Luta ' + num4(l.numLuta) + (l.horaPrevista ? ' · ' + hora(l.horaPrevista) : '') + '</span>' + seloLuta(l, ehProxima) + '</div>' +
+        '<div class="atleta ' + cl1 + '"><div><div class="nome">' + esc(l.nome1 || "A definir") + '</div><span class="eq" style="font-size:.75rem;color:#94a3b8">' + esc(l.equipe1) + '</span></div></div>' +
+        '<div class="atleta ' + cl2 + '"><div><div class="nome">' + esc(l.nome2 || "A definir") + '</div><span class="eq" style="font-size:.75rem;color:#94a3b8">' + esc(l.equipe2) + '</span></div></div>' +
+        (l.encerrada && l.vencedor ? '<div class="resultado">🏆 ' + esc(l.vencedor) + (l.placar && l.placar !== "W.O." ? ' · ' + esc(l.placar) : '') + (l.tipoVitoria ? ' · ' + esc(l.tipoVitoria) : '') + '</div>' : '') +
+        '</div>';
+    }
+    function proximasPorArea() {
+      var mapa = {};
+      (dados.chaves || []).forEach(function (ch) {
+        (ch.lutas || []).forEach(function (l) {
+          if (l.bye || l.encerrada || !definido(l.nome1) || !definido(l.nome2)) return;
+          var atual = mapa[ch.area];
+          if (!atual || minutos(l.horaPrevista) < minutos(atual.horaPrevista) || (minutos(l.horaPrevista) === minutos(atual.horaPrevista) && l.numLuta < atual.numLuta)) mapa[ch.area] = l;
+        });
+      });
+      return mapa;
+    }
+    function renderChaves() {
+      var area = document.getElementById("fAreaChaves").value;
+      var termo = norm(document.getElementById("fBuscaChaves").value.trim());
+      var prox = proximasPorArea();
+      var chaves = (dados.chaves || []).filter(function (ch) {
+        if (area !== "TODAS" && String(ch.area) !== area) return false;
+        if (!termo) return true;
+        var alvo = ch.categoria + " " + (ch.lutas || []).map(function (l) { return l.nome1 + " " + l.nome2 + " " + l.equipe1 + " " + l.equipe2; }).join(" ");
+        return norm(alvo).indexOf(termo) !== -1;
+      });
+      if (!chaves.length) return '<div class="vazio">' + (termo ? "Nada encontrado para esta busca." : "As chaves e lutas aparecem aqui assim que forem definidas.") + '</div>';
+
+      var casadas = chaves.filter(function (ch) { return (ch.lutas || []).filter(function (l) { return !l.bye; }).length <= 1; });
+      var eliminatorias = chaves.filter(function (ch) { return (ch.lutas || []).filter(function (l) { return !l.bye; }).length > 1; });
+      var html = "";
+
+      if (casadas.length) {
+        var porArea = {};
+        casadas.forEach(function (ch) { (ch.lutas || []).forEach(function (l) { if (!l.bye) (porArea[ch.area] = porArea[ch.area] || []).push(l); }); });
+        Object.keys(porArea).map(Number).sort(function (a, b) { return a - b; }).forEach(function (a) {
+          var lista = porArea[a].sort(function (x, y) { return (minutos(x.horaPrevista) - minutos(y.horaPrevista)) || (x.numLuta - y.numLuta); });
+          var enc = lista.filter(function (l) { return l.encerrada; }).length;
+          html += '<div class="bloco"><div class="bloco-titulo">📍 Área ' + a + ' · Lutas casadas<small>' + enc + ' de ' + lista.length + ' encerradas</small></div><div class="lutas-grid">' +
+            lista.map(function (l) { return cartaoLuta(l, prox[a] && prox[a].numLuta === l.numLuta); }).join("") + '</div></div>';
+        });
+      }
+
+      eliminatorias.forEach(function (ch) {
+        var lutas = (ch.lutas || []).slice();
+        var rounds = {};
+        lutas.forEach(function (l) { var r = l.round || 1; (rounds[r] = rounds[r] || []).push(l); });
+        var chavesR = Object.keys(rounds).map(Number).sort(function (a, b) { return a - b; });
+        var colunas = chavesR.map(function (r) {
+          var ls = rounds[r].sort(function (a, b) { return a.numLuta - b.numLuta; });
+          var titulo = (ls[0] && ls[0].fase) || ("Rodada " + r);
+          return '<div class="round"><h4>' + esc(titulo) + '</h4>' + ls.map(function (l) {
+            if (l.bye) return '<div class="luta"><div class="luta-topo"><span>Luta ' + num4(l.numLuta) + '</span><span class="selo s-agu">BYE</span></div><div class="atleta"><div class="nome">' + esc(definido(l.nome1) ? l.nome1 : l.nome2) + '</div></div></div>';
+            return cartaoLuta(l, prox[ch.area] && prox[ch.area].numLuta === l.numLuta);
+          }).join("") + '</div>';
+        }).join("");
+        var fin = String(ch.status || "").toUpperCase().indexOf("FINALIZADA") !== -1;
+        var p = ch.podium || {};
+        var podio = (p.primeiro || p.segundo) ? '<div class="podio"><span>🥇 ' + esc(p.primeiro || "-") + '</span><span>🥈 ' + esc(p.segundo || "-") + '</span>' +
+          (p.terceiros || []).map(function (t) { return '<span>🥉 ' + esc(t) + '</span>'; }).join("") + '</div>' : '';
+        html += '<div class="bloco"><div class="bloco-titulo">' + esc(ch.categoria) + '<small>Área ' + ch.area + (fin ? ' · <span class="selo s-fin">Finalizada</span>' : '') + '</small></div>' +
+          '<div class="chave-rounds">' + colunas + '</div>' + podio + '</div>';
+      });
+      return html;
+    }
+
+    // ---------------- ABA CHECAGEM DE ATLETAS ----------------
+    function pesoTxt(p) {
+      var t = String(p || "").trim();
+      if (/^\d+([.,]\d+)?$/.test(t)) return t.replace(".", ",") + " kg";
+      return t;
+    }
+    function titulo(t) {
+      return String(t || "").toLowerCase().replace(/(^|[\s\-\/(])([a-zà-ú])/g, function (m, p, l) { return p + l.toUpperCase(); }).replace(/ (E|De|Da|Do|Dos|Das) /g, function (m) { return m.toLowerCase(); });
+    }
+    function linhaAtleta(a, comDivisao) {
+      var extra = comDivisao ? [titulo(a.divisao), titulo(a.sexo)].filter(Boolean).join(" · ") : "";
+      return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span>' +
+        (extra ? '<span class="eq so-mobile">' + esc(extra) + '</span>' : '') + '</td>' +
+        (comDivisao ? '<td class="esconder-mobile">' + esc(titulo(a.divisao)) + '</td><td class="esconder-mobile">' + esc(titulo(a.sexo)) + '</td>' : '') +
+        '<td>' + esc(titulo(a.faixa)) + '</td><td class="num">' + esc(pesoTxt(titulo(a.peso))) + '</td></tr>';
+    }
+    function blocoFestival(filtra) {
+      var lista = ((dados.atletas && dados.atletas.festival) || []).filter(filtra);
+      if (!lista.length) return "";
+      return '<div class="bloco"><div class="cat-titulo festival">🧸 Festival Kids · ' + lista.length + ' criança(s)</div>' +
+        '<table class="tab-atletas"><colgroup><col><col class="c-faixa"></colgroup>' +
+        '<thead><tr><th>Atleta / Equipe</th><th>Faixa</th></tr></thead><tbody>' +
+        lista.map(function (a) {
+          return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span></td><td>' + esc(titulo(a.faixa)) + '</td></tr>';
+        }).join("") + '</tbody></table></div>';
+    }
+    function renderAtletas() {
+      var termo = norm(document.getElementById("fBuscaAtletas").value.trim());
+      var cats = (dados.atletas && dados.atletas.porCategoria) || [];
+      var casadas = String((dados.evento && dados.evento.modoEvento) || "").toUpperCase() === "CASADAS";
+      var filtra = function (a) { return !termo || norm(a.nome + " " + a.equipe).indexOf(termo) !== -1; };
+      var html = "", total = 0;
+      var vazio = '<div class="vazio">' + (termo ? "Nenhum atleta encontrado." : "A lista de atletas aparece aqui assim que as inscrições forem confirmadas.") + '</div>';
+
+      if (casadas) {
+        // Lutas casadas: não existem categorias fechadas, então mostra uma lista única em ordem alfabética
+        var todos = [];
+        cats.forEach(function (c) {
+          var sexoCat = String(c.categoria || "").split("|")[0].trim();
+          c.atletas.forEach(function (a) {
+            if (!filtra(a)) return;
+            if (!a.sexo) a.sexo = sexoCat;
+            todos.push(a);
+          });
+        });
+        todos.sort(function (x, y) { return String(x.nome).localeCompare(String(y.nome)); });
+        if (todos.length) {
+          html = '<div class="bloco"><div class="cat-titulo">Atletas inscritos · ' + todos.length + ' atleta(s)</div>' +
+            '<table class="tab-atletas"><colgroup><col><col class="c-div esconder-mobile"><col class="c-sexo esconder-mobile"><col class="c-faixa"><col class="c-peso"></colgroup>' +
+            '<thead><tr><th>Atleta / Equipe</th><th class="esconder-mobile">Categoria</th><th class="esconder-mobile">Sexo</th><th>Faixa</th><th class="num">Peso</th></tr></thead><tbody>' +
+            todos.map(function (a) { return linhaAtleta(a, true); }).join("") + '</tbody></table></div>';
+        }
+        html += blocoFestival(filtra);
+        return html || vazio;
+      }
+
+      cats.forEach(function (c) {
+        var lista = c.atletas.filter(filtra);
+        if (!lista.length) return;
+        total += lista.length;
+        html += '<div class="bloco"><div class="cat-titulo">' + esc(c.categoria) + ' · ' + lista.length + ' atleta(s)</div>' +
+          '<table class="tab-atletas"><colgroup><col><col class="c-faixa"><col class="c-peso"></colgroup>' +
+          '<thead><tr><th>Atleta / Equipe</th><th>Faixa</th><th class="num">Peso</th></tr></thead><tbody>' +
+          lista.map(function (a) { return linhaAtleta(a, false); }).join("") + '</tbody></table></div>';
+      });
+      html += blocoFestival(filtra);
+      return html || vazio;
+    }
+
+    function renderizar() {
+      if (!dados) return;
+      if (abaAtual === "cronograma") document.getElementById("conteudoCrono").innerHTML = renderCronograma();
+      if (abaAtual === "chaves") document.getElementById("conteudoChaves").innerHTML = renderChaves();
+      if (abaAtual === "atletas") document.getElementById("conteudoAtletas").innerHTML = renderAtletas();
+    }
+
+    // ---------------- EVENTOS ----------------
+    document.querySelectorAll("nav button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        abaAtual = b.getAttribute("data-aba");
+        document.querySelectorAll("nav button").forEach(function (x) { x.classList.toggle("ativo", x === b); });
+        ["cronograma", "chaves", "atletas"].forEach(function (a) { document.getElementById("aba-" + a).hidden = (a !== abaAtual); });
+        try { history.replaceState(null, "", "#" + abaAtual); } catch (e) {}
+        renderizar();
+      });
+    });
+    ["fAreaCrono", "fBuscaCrono", "fAreaChaves", "fBuscaChaves", "fBuscaAtletas"].forEach(function (id) {
+      var el = document.getElementById(id);
+      el.addEventListener(el.tagName === "SELECT" ? "change" : "input", renderizar);
+    });
+    // ---- Aceite LGPD antes de abrir o formulário de inscrição ----
+    function textoAceite(nomeEvento) {
+      var ev = esc(nomeEvento || "o evento");
+      return "<p>Ao inscrever atletas, o professor declara que:</p>" +
+        "<p><b>1. Dados pessoais.</b> Autoriza a organização de " + ev + " a tratar os dados informados (nome, data de nascimento, sexo, faixa, peso, equipe, documento e contato do professor) para inscrição, pesagem, montagem de chaves e lutas, cronograma, premiação e divulgação de resultados, conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018).</p>" +
+        "<p><b>2. Divulgação pública.</b> Nome, equipe, faixa, peso, horários e resultados do atleta serão exibidos nesta página pública. Documento, data de nascimento e telefone não são divulgados.</p>" +
+        "<p><b>3. Direito de imagem.</b> Autoriza, sem custo, o uso de fotos e vídeos do atleta feitos durante o evento, para divulgação do evento e do esporte em redes sociais, site e materiais da organização.</p>" +
+        "<p><b>4. Menores de 18 anos.</b> Declara ter a autorização dos pais ou responsáveis legais de cada atleta menor de idade inscrito, inclusive para o uso de imagem.</p>" +
+        "<p><b>5. Direitos do titular.</b> O atleta ou seu responsável pode pedir à organização, a qualquer momento, acesso, correção ou exclusão dos seus dados. Os dados são guardados apenas pelo tempo necessário ao evento e às obrigações legais.</p>" +
+        "<p><b>6. Aptidão física e riscos.</b> Em nome do atleta e, se menor de idade, também dos pais ou responsáveis legais, o professor declara que: o atleta está clinicamente apto para praticar atividade física e competir, sem restrição médica conhecida; tem ciência de que se trata de uma competição de luta, com contato físico, em que podem ocorrer lesões; caso ocorra alguma lesão, a responsabilidade é do próprio atleta ou de seus responsáveis legais; e cabe à organização de " + ev + " manter no local uma equipe médica para o primeiro atendimento e o socorro de emergência.</p>";
+    }
+    var aceiteFundo = document.getElementById("aceiteFundo");
+    var aceiteCheck = document.getElementById("aceiteCheck");
+    var aceiteSaude = document.getElementById("aceiteSaude");
+    function atualizarBotaoAceite() { aceiteContinuar.disabled = !(aceiteCheck.checked && aceiteSaude.checked); }
+    var aceiteContinuar = document.getElementById("aceiteContinuar");
+    document.getElementById("linkInscricao").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("aceiteTexto").innerHTML = textoAceite(dados && dados.evento ? dados.evento.nome : "");
+      aceiteCheck.checked = false;
+      aceiteSaude.checked = false;
+      aceiteContinuar.disabled = true;
+      aceiteFundo.hidden = false;
+    });
+    aceiteCheck.addEventListener("change", atualizarBotaoAceite);
+    aceiteSaude.addEventListener("change", atualizarBotaoAceite);
+    document.getElementById("aceiteCancelar").addEventListener("click", function () { aceiteFundo.hidden = true; });
+    aceiteFundo.addEventListener("click", function (e) { if (e.target === aceiteFundo) aceiteFundo.hidden = true; });
+    aceiteContinuar.addEventListener("click", function () {
+      if (!aceiteCheck.checked || !aceiteSaude.checked) return;
+      var link = document.getElementById("linkInscricao").href;
+      aceiteFundo.hidden = true;
+      if (/^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//i.test(link)) window.open(link, "_blank", "noopener");
+    });
+
+    // ---- Vídeo do evento no lugar do cartaz (config.js: VIDEO_EVENTO) ----
+    var videoEv = document.getElementById("videoEvento");
+    var arqVideo = String(CFG.VIDEO_EVENTO || "").trim();
+    // A página do evento fica na pasta /evento: arquivos da raiz do site levam "../" na frente
+    if (arqVideo && !/^(https?:)?\/\//i.test(arqVideo) && arqVideo.charAt(0) !== "/" && arqVideo.indexOf("../") !== 0) arqVideo = "../" + arqVideo;
+    if (arqVideo) {
+      videoEv.src = arqVideo;
+      videoEv.hidden = false;
+      document.getElementById("logoEvento").hidden = true;
+      videoEv.addEventListener("error", function () {
+        // Se o vídeo não carregar, volta a mostrar a imagem
+        videoEv.hidden = true;
+        document.getElementById("logoEvento").hidden = false;
+      });
+      var tentarTocar = function () { var pr = videoEv.play(); if (pr && pr.catch) pr.catch(function () {}); };
+      tentarTocar();
+      document.addEventListener("visibilitychange", function () { if (!document.hidden) tentarTocar(); });
+    }
+
+    document.getElementById("btnCartaz").addEventListener("click", function () {
+      var zImg = document.getElementById("zoomImg"), zVid = document.getElementById("zoomVideo");
+      if (arqVideo && !videoEv.hidden) {
+        zImg.hidden = true;
+        zVid.hidden = false;
+        zVid.src = arqVideo;
+        zVid.currentTime = 0;
+        var pr = zVid.play(); if (pr && pr.catch) pr.catch(function () {});
+      } else {
+        zVid.hidden = true;
+        zImg.hidden = false;
+        zImg.src = document.getElementById("logoEvento").src;
+      }
+      document.getElementById("zoomCartaz").hidden = false;
+    });
+    document.getElementById("zoomCartaz").addEventListener("click", function (e) {
+      if (e.target.id === "zoomVideo") return; // deixa usar os controles do vídeo
+      var zVid = document.getElementById("zoomVideo");
+      zVid.pause();
+      this.hidden = true;
+    });
+    document.getElementById("btnImprimir").addEventListener("click", function () {
+      if (abaAtual !== "cronograma") document.querySelector('nav button[data-aba="cronograma"]').click();
+      setTimeout(function () { window.print(); }, 150);
+    });
+    var abaInicial = (location.hash || "").replace("#", "");
+    if (["chaves", "atletas"].indexOf(abaInicial) !== -1) document.querySelector('nav button[data-aba="' + abaInicial + '"]').click();
+
+    carregar();
+    setInterval(function () { if (!document.hidden) carregar(); }, Math.max(15, Number(CFG.ATUALIZAR_A_CADA_SEGUNDOS) || 30) * 1000);
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) carregar(); });
+  })();
+  </script>
+</body>
+</html>
