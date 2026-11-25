@@ -100,9 +100,12 @@
     .cat-titulo { background: var(--preto-2); color: #fff; padding: 8px 14px; font-weight: 800; font-size: .85rem; }
     .tab-atletas { table-layout: fixed; }
     .tab-atletas td, .tab-atletas th { padding-left: 14px; padding-right: 14px; overflow-wrap: break-word; }
-    .tab-atletas col.c-sexo { width: 120px; }
-    .tab-atletas col.c-faixa { width: 130px; }
-    .tab-atletas col.c-peso { width: 100px; }
+    .tab-atletas col.c-sexo { width: 110px; }
+    .tab-atletas col.c-div { width: 160px; }
+    .so-mobile { display: none !important; }
+    .cat-titulo.festival { background: #7c3aed; }
+    .tab-atletas col.c-faixa { width: 150px; }
+    .tab-atletas col.c-peso { width: 125px; }
     .tab-atletas .num { text-align: right; white-space: nowrap; }
     .vazio { background: #fff; border-radius: var(--raio); padding: 40px 20px; text-align: center; color: var(--cinza-3); font-weight: 700; }
     .status-linha { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .8rem; color: var(--cinza-4); margin: 0 0 10px 4px; }
@@ -119,10 +122,11 @@
       .barra small { display: none; }
       .esconder-mobile { display: none; }
       td, th { padding: 7px 6px; }
-      .tab-atletas col.c-sexo { width: 0; }
+      .tab-atletas col.c-sexo, .tab-atletas col.c-div { width: 0; }
+      td .so-mobile { display: block !important; color: var(--azul); }
       .tab-atletas td, .tab-atletas th { padding-left: 8px; padding-right: 8px; }
-      .tab-atletas col.c-faixa { width: 92px; }
-      .tab-atletas col.c-peso { width: 82px; }
+      .tab-atletas col.c-faixa { width: 88px; }
+      .tab-atletas col.c-peso { width: 100px; }
       .tab-atletas td { font-size: .82rem; }
     }
     @media print {
@@ -443,10 +447,25 @@
       if (/^\d+([.,]\d+)?$/.test(t)) return t.replace(".", ",") + " kg";
       return t;
     }
-    function linhaAtleta(a, sexo) {
-      return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span></td>' +
-        (sexo !== undefined ? '<td class="esconder-mobile">' + esc(sexo) + '</td>' : '') +
-        '<td>' + esc(a.faixa) + '</td><td class="num">' + esc(pesoTxt(a.peso)) + '</td></tr>';
+    function titulo(t) {
+      return String(t || "").toLowerCase().replace(/(^|[\s\-\/(])([a-zà-ú])/g, function (m, p, l) { return p + l.toUpperCase(); }).replace(/ (E|De|Da|Do|Dos|Das) /g, function (m) { return m.toLowerCase(); });
+    }
+    function linhaAtleta(a, comDivisao) {
+      var extra = comDivisao ? [titulo(a.divisao), titulo(a.sexo)].filter(Boolean).join(" · ") : "";
+      return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span>' +
+        (extra ? '<span class="eq so-mobile">' + esc(extra) + '</span>' : '') + '</td>' +
+        (comDivisao ? '<td class="esconder-mobile">' + esc(titulo(a.divisao)) + '</td><td class="esconder-mobile">' + esc(titulo(a.sexo)) + '</td>' : '') +
+        '<td>' + esc(titulo(a.faixa)) + '</td><td class="num">' + esc(pesoTxt(titulo(a.peso))) + '</td></tr>';
+    }
+    function blocoFestival(filtra) {
+      var lista = ((dados.atletas && dados.atletas.festival) || []).filter(filtra);
+      if (!lista.length) return "";
+      return '<div class="bloco"><div class="cat-titulo festival">🧸 Festival Kids · ' + lista.length + ' criança(s)</div>' +
+        '<table class="tab-atletas"><colgroup><col><col class="c-faixa"></colgroup>' +
+        '<thead><tr><th>Atleta / Equipe</th><th>Faixa</th></tr></thead><tbody>' +
+        lista.map(function (a) {
+          return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span></td><td>' + esc(titulo(a.faixa)) + '</td></tr>';
+        }).join("") + '</tbody></table></div>';
     }
     function renderAtletas() {
       var termo = norm(document.getElementById("fBuscaAtletas").value.trim());
@@ -454,20 +473,28 @@
       var casadas = String((dados.evento && dados.evento.modoEvento) || "").toUpperCase() === "CASADAS";
       var filtra = function (a) { return !termo || norm(a.nome + " " + a.equipe).indexOf(termo) !== -1; };
       var html = "", total = 0;
+      var vazio = '<div class="vazio">' + (termo ? "Nenhum atleta encontrado." : "A lista de atletas aparece aqui assim que as inscrições forem confirmadas.") + '</div>';
 
       if (casadas) {
         // Lutas casadas: não existem categorias fechadas, então mostra uma lista única em ordem alfabética
         var todos = [];
         cats.forEach(function (c) {
-          var sexo = String(c.categoria || "").split("|")[0].trim();
-          c.atletas.forEach(function (a) { if (filtra(a)) todos.push({ a: a, sexo: sexo }); });
+          var sexoCat = String(c.categoria || "").split("|")[0].trim();
+          c.atletas.forEach(function (a) {
+            if (!filtra(a)) return;
+            if (!a.sexo) a.sexo = sexoCat;
+            todos.push(a);
+          });
         });
-        todos.sort(function (x, y) { return String(x.a.nome).localeCompare(String(y.a.nome)); });
-        if (!todos.length) return '<div class="vazio">' + (termo ? "Nenhum atleta encontrado." : "A lista de atletas aparece aqui assim que as inscrições forem confirmadas.") + '</div>';
-        return '<div class="bloco"><div class="cat-titulo">Atletas inscritos · ' + todos.length + ' atleta(s)</div>' +
-          '<table class="tab-atletas"><colgroup><col><col class="c-sexo esconder-mobile"><col class="c-faixa"><col class="c-peso"></colgroup>' +
-          '<thead><tr><th>Atleta / Equipe</th><th class="esconder-mobile">Sexo</th><th>Faixa</th><th class="num">Peso</th></tr></thead><tbody>' +
-          todos.map(function (x) { return linhaAtleta(x.a, x.sexo); }).join("") + '</tbody></table></div>';
+        todos.sort(function (x, y) { return String(x.nome).localeCompare(String(y.nome)); });
+        if (todos.length) {
+          html = '<div class="bloco"><div class="cat-titulo">Atletas inscritos · ' + todos.length + ' atleta(s)</div>' +
+            '<table class="tab-atletas"><colgroup><col><col class="c-div esconder-mobile"><col class="c-sexo esconder-mobile"><col class="c-faixa"><col class="c-peso"></colgroup>' +
+            '<thead><tr><th>Atleta / Equipe</th><th class="esconder-mobile">Categoria</th><th class="esconder-mobile">Sexo</th><th>Faixa</th><th class="num">Peso</th></tr></thead><tbody>' +
+            todos.map(function (a) { return linhaAtleta(a, true); }).join("") + '</tbody></table></div>';
+        }
+        html += blocoFestival(filtra);
+        return html || vazio;
       }
 
       cats.forEach(function (c) {
@@ -477,10 +504,10 @@
         html += '<div class="bloco"><div class="cat-titulo">' + esc(c.categoria) + ' · ' + lista.length + ' atleta(s)</div>' +
           '<table class="tab-atletas"><colgroup><col><col class="c-faixa"><col class="c-peso"></colgroup>' +
           '<thead><tr><th>Atleta / Equipe</th><th>Faixa</th><th class="num">Peso</th></tr></thead><tbody>' +
-          lista.map(function (a) { return linhaAtleta(a); }).join("") + '</tbody></table></div>';
+          lista.map(function (a) { return linhaAtleta(a, false); }).join("") + '</tbody></table></div>';
       });
-      if (!total) return '<div class="vazio">' + (termo ? "Nenhum atleta encontrado." : "A lista de atletas aparece aqui assim que as inscrições forem confirmadas.") + '</div>';
-      return html;
+      html += blocoFestival(filtra);
+      return html || vazio;
     }
 
     function renderizar() {
