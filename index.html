@@ -73,6 +73,25 @@
     /* Organizadores */
     .org { background: var(--preto); color: #fff; border-radius: 18px; padding: 40px; display: flex; justify-content: space-between; align-items: center; gap: 28px; flex-wrap: wrap; }
     .org h2 { margin: 0 0 8px; color: #fff; }
+    .org-texto { flex: 1 1 320px; }
+    .org-mini { margin-top: 16px !important; font-size: .9rem !important; }
+    .org-mini a { color: var(--azul-vivo); font-weight: 700; }
+    .form-contato { flex: 1 1 460px; background: #fff; color: var(--preto); border-radius: 14px; padding: 22px; }
+    .form-contato h3 { margin: 0 0 14px; font-size: 1.25rem; }
+    .campos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .campos label { display: flex; flex-direction: column; gap: 4px; font-size: .82rem; font-weight: 800; color: var(--cinza-4); }
+    .campos .inteiro { grid-column: 1 / -1; }
+    .campos input, .campos select, .campos textarea { font: inherit; font-size: .95rem; font-weight: 500; color: var(--preto); padding: 10px 11px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; width: 100%; }
+    .campos input:focus, .campos select:focus, .campos textarea:focus { outline: 2px solid var(--azul); border-color: var(--azul); }
+    .campos textarea { resize: vertical; }
+    .campos .aceite { flex-direction: row; align-items: flex-start; gap: 8px; font-weight: 600; cursor: pointer; }
+    .campos .aceite input { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; }
+    .armadilha { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
+    .form-contato .bt { margin-top: 14px; width: 100%; justify-content: center; border: 0; cursor: pointer; }
+    .form-contato .bt:disabled { opacity: .6; cursor: wait; }
+    .form-msg { margin: 12px 0 0; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: .92rem; }
+    .form-msg.ok { background: #dcfce7; color: #166534; }
+    .form-msg.erro { background: #fee2e2; color: #991b1b; }
     .org p { margin: 0; color: #cbd5e1; max-width: 620px; font-size: 1.05rem; }
 
     footer { border-top: 1px solid var(--cinza-2); padding: 24px 0 36px; color: var(--cinza-4); font-size: .9rem; }
@@ -94,7 +113,9 @@
       .evento { flex-direction: column; text-align: center; }
       .evento-midia { width: 100%; max-width: 300px; height: 380px; }
       .grade { grid-template-columns: 1fr; }
-      .org { padding: 28px; text-align: center; justify-content: center; }
+      .org { padding: 22px; text-align: center; justify-content: center; }
+      .form-contato { text-align: left; padding: 18px; }
+      .campos { grid-template-columns: 1fr; }
       h2 { font-size: 1.6rem; }
       footer .container { flex-direction: column; text-align: center; }
     }
@@ -164,11 +185,38 @@
   <section class="bloco" id="organizadores" style="padding-top:0">
     <div class="container">
       <div class="org">
-        <div>
+        <div class="org-texto">
           <h2>Vai organizar um campeonato?</h2>
           <p>Leve o G7PRO para o seu evento: mais organização no dia, informação em tempo real para atletas e público e imagem profissional para a sua marca.</p>
+          <p class="org-mini">Preencha o formulário e retornamos pelo WhatsApp ou e-mail.<br>Se preferir: <a href="mailto:g7pro.gestao@gmail.com">g7pro.gestao@gmail.com</a></p>
         </div>
-        <a class="bt bt-azul" href="mailto:g7pro.gestao@gmail.com?subject=Quero%20o%20G7PRO%20no%20meu%20evento">✉️ Fale com a gente</a>
+
+        <form class="form-contato" id="formContato" novalidate>
+          <h3>Fale com a gente</h3>
+          <div class="campos">
+            <label class="inteiro">Seu nome *<input name="nome" maxlength="80" autocomplete="name" required></label>
+            <label>WhatsApp<input name="whatsapp" maxlength="25" inputmode="tel" autocomplete="tel" placeholder="(21) 99999-9999"></label>
+            <label>E-mail<input name="email" type="email" maxlength="100" autocomplete="email"></label>
+            <label class="inteiro">Nome do evento<input name="evento" maxlength="100" placeholder="Ex.: Copa de Verão de Jiu-Jitsu"></label>
+            <label>Cidade<input name="cidade" maxlength="60"></label>
+            <label>Data prevista<input name="data" maxlength="30" placeholder="Ex.: março/2027"></label>
+            <label>Atletas (estimativa)<input name="atletas" maxlength="10" inputmode="numeric" placeholder="Ex.: 150"></label>
+            <label>Formato
+              <select name="formato">
+                <option value="">Selecione</option>
+                <option>Chaves</option>
+                <option>Lutas casadas</option>
+                <option>Chaves e lutas casadas</option>
+                <option>Ainda não sei</option>
+              </select>
+            </label>
+            <label class="inteiro">Mensagem<textarea name="mensagem" maxlength="1000" rows="3" placeholder="Conte um pouco sobre o evento"></textarea></label>
+            <label class="armadilha" aria-hidden="true">Site<input name="site_web" tabindex="-1" autocomplete="off"></label>
+            <label class="aceite inteiro"><input type="checkbox" name="lgpd" value="1"> <span>Concordo que o G7PRO use estes dados apenas para responder ao meu contato (LGPD). *</span></label>
+          </div>
+          <p class="form-msg" id="msgContato" hidden></p>
+          <button type="submit" class="bt bt-azul" id="btEnviarContato">✉️ Enviar contato</button>
+        </form>
       </div>
     </div>
   </section>
@@ -247,6 +295,39 @@
         document.body.appendChild(s);
       });
     }
+
+    // ---- Formulário "Fale com a gente" ----
+    var form = document.getElementById("formContato");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var msg = document.getElementById("msgContato"), bt = document.getElementById("btEnviarContato");
+      function aviso(t, ok) { msg.textContent = t; msg.className = "form-msg " + (ok ? "ok" : "erro"); msg.hidden = false; }
+      var f = form.elements;
+      var v = function (n) { return String(f[n].value || "").trim(); };
+      if (v("nome").length < 2) return aviso("Informe seu nome.", false);
+      if (!v("whatsapp") && !v("email")) return aviso("Informe um WhatsApp ou e-mail para retornarmos.", false);
+      if (v("email") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email"))) return aviso("Confira o e-mail.", false);
+      if (!f.lgpd.checked) return aviso("Marque a concordância com o uso dos dados para podermos responder.", false);
+      if (!CFG.URL_API || CFG.URL_API.indexOf("script.google.com") === -1) return aviso("Formulário indisponível. Escreva para g7pro.gestao@gmail.com.", false);
+
+      var campos = ["nome", "whatsapp", "email", "evento", "cidade", "data", "atletas", "formato", "mensagem", "site_web"];
+      var q = "&lgpd=1";
+      campos.forEach(function (n) { q += "&" + n + "=" + encodeURIComponent(v(n)); });
+
+      bt.disabled = true; bt.textContent = "Enviando...";
+      var base = String(CFG.URL_API).split("#")[0].trim();
+      var nome = "g7contato_" + Date.now(), s = document.createElement("script");
+      var t = setTimeout(function () { fim(); aviso("Não conseguimos enviar agora. Tente de novo ou escreva para g7pro.gestao@gmail.com.", false); }, 25000);
+      function fim() { clearTimeout(t); bt.disabled = false; bt.textContent = "✉️ Enviar contato"; try { delete window[nome]; } catch (e2) {} if (s.parentNode) s.parentNode.removeChild(s); }
+      window[nome] = function (r) {
+        fim();
+        if (r && r.sucesso) { form.reset(); aviso((r.mensagem || "Recebemos seu contato!") + " 🥋", true); }
+        else aviso((r && r.mensagem) || "Não foi possível enviar.", false);
+      };
+      s.onerror = function () { fim(); aviso("Falha de conexão. Tente de novo ou escreva para g7pro.gestao@gmail.com.", false); };
+      s.src = base + (base.indexOf("?") === -1 ? "?" : "&") + "api=contato" + q + "&callback=" + nome + "&t=" + Date.now();
+      document.body.appendChild(s);
+    });
 
     if (!CFG.URL_API || CFG.URL_API.indexOf("script.google.com") === -1) {
       document.getElementById("nomeEvento").textContent = "Veja o evento em andamento";
