@@ -28,7 +28,7 @@
 
     .hero { margin-top: 12px; background: #fff; border: 1px solid var(--cinza-2); border-left: 8px solid var(--azul); border-radius: 14px; padding: 20px; display: flex; gap: 24px; align-items: center; box-shadow: 0 1px 3px rgba(15,23,42,.08); }
     .cartaz { width: 230px; height: 300px; flex-shrink: 0; border-radius: 10px; background: var(--preto); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; border: 0; padding: 0; }
-    .cartaz img { width: 100%; height: 100%; object-fit: contain; }
+    .cartaz img, .cartaz video { width: 100%; height: 100%; object-fit: contain; }
     .hero-info { min-width: 0; flex: 1; }
     .hero-tag { font-size: .75rem; font-weight: 900; letter-spacing: 1px; color: var(--azul); text-transform: uppercase; }
     .hero h1 { margin: 6px 0 10px; font-size: 2.1rem; line-height: 1.1; color: var(--preto); text-transform: uppercase; overflow-wrap: anywhere; }
@@ -53,7 +53,7 @@
     .aceite input[type=checkbox] { width: 22px; height: 22px; flex-shrink: 0; margin-top: 1px; accent-color: var(--azul); }
     .aceite .acoes { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
     .bt[disabled] { opacity: .45; cursor: not-allowed; }
-    .zoom img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+    .zoom img, .zoom video { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
 
     nav { display: flex; gap: 8px; margin: 14px 0; overflow-x: auto; }
     nav button { border: 1px solid var(--cinza-2); background: #fff; color: var(--cinza-4); font-weight: 800; padding: 10px 16px; border-radius: var(--raio); cursor: pointer; white-space: nowrap; font-size: .95rem; }
@@ -148,6 +148,7 @@
     <section class="hero">
       <button type="button" class="cartaz" id="btnCartaz" title="Ver cartaz em tela cheia">
         <img id="logoEvento" src="logo-g7pro.png" alt="Cartaz do evento">
+        <video id="videoEvento" muted autoplay loop playsinline preload="auto" hidden aria-label="Vídeo do evento"></video>
       </button>
       <div class="hero-info">
         <div class="hero-tag">Evento oficial</div>
@@ -162,7 +163,7 @@
       </div>
     </section>
 
-    <div id="zoomCartaz" class="zoom" hidden><img id="zoomImg" alt="Cartaz do evento"></div>
+    <div id="zoomCartaz" class="zoom" hidden><img id="zoomImg" alt="Cartaz do evento"><video id="zoomVideo" controls playsinline loop hidden></video></div>
 
     <div id="aceiteFundo" class="aceite-fundo" hidden>
       <div class="aceite" role="dialog" aria-modal="true" aria-labelledby="aceiteTitulo">
@@ -566,12 +567,44 @@
       if (/^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//i.test(link)) window.open(link, "_blank", "noopener");
     });
 
+    // ---- Vídeo do evento no lugar do cartaz (config.js: VIDEO_EVENTO) ----
+    var videoEv = document.getElementById("videoEvento");
+    var arqVideo = String(CFG.VIDEO_EVENTO || "").trim();
+    if (arqVideo) {
+      videoEv.src = arqVideo;
+      videoEv.hidden = false;
+      document.getElementById("logoEvento").hidden = true;
+      videoEv.addEventListener("error", function () {
+        // Se o vídeo não carregar, volta a mostrar a imagem
+        videoEv.hidden = true;
+        document.getElementById("logoEvento").hidden = false;
+      });
+      var tentarTocar = function () { var pr = videoEv.play(); if (pr && pr.catch) pr.catch(function () {}); };
+      tentarTocar();
+      document.addEventListener("visibilitychange", function () { if (!document.hidden) tentarTocar(); });
+    }
+
     document.getElementById("btnCartaz").addEventListener("click", function () {
-      var src = document.getElementById("logoEvento").src;
-      document.getElementById("zoomImg").src = src;
+      var zImg = document.getElementById("zoomImg"), zVid = document.getElementById("zoomVideo");
+      if (arqVideo && !videoEv.hidden) {
+        zImg.hidden = true;
+        zVid.hidden = false;
+        zVid.src = arqVideo;
+        zVid.currentTime = 0;
+        var pr = zVid.play(); if (pr && pr.catch) pr.catch(function () {});
+      } else {
+        zVid.hidden = true;
+        zImg.hidden = false;
+        zImg.src = document.getElementById("logoEvento").src;
+      }
       document.getElementById("zoomCartaz").hidden = false;
     });
-    document.getElementById("zoomCartaz").addEventListener("click", function () { this.hidden = true; });
+    document.getElementById("zoomCartaz").addEventListener("click", function (e) {
+      if (e.target.id === "zoomVideo") return; // deixa usar os controles do vídeo
+      var zVid = document.getElementById("zoomVideo");
+      zVid.pause();
+      this.hidden = true;
+    });
     document.getElementById("btnImprimir").addEventListener("click", function () {
       if (abaAtual !== "cronograma") document.querySelector('nav button[data-aba="cronograma"]').click();
       setTimeout(function () { window.print(); }, 150);
