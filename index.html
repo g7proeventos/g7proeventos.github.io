@@ -112,6 +112,9 @@
     .erro { background: #fee2e2; color: #991b1b; border-radius: var(--raio); padding: 10px 14px; font-weight: 700; margin-bottom: 12px; display: none; }
     footer { margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--cinza-4); font-size: .85rem; border-top: 1px solid var(--cinza-2); padding-top: 14px; }
     footer img { width: 48px; height: 47px; }
+    .rodape-texto { display: flex; flex-direction: column; gap: 2px; }
+    .rodape-contato { color: var(--azul); font-weight: 700; text-decoration: none; }
+    .rodape-contato:hover { text-decoration: underline; }
 
     @media (max-width: 640px) {
       .hero { flex-direction: column; align-items: stretch; text-align: center; padding: 16px; gap: 14px; }
@@ -216,7 +219,10 @@
 
     <footer>
       <img src="logo-g7pro.png" alt="G7PRO">
-      <span>Sistema <strong>G7PRO - Gestão de Eventos</strong></span>
+      <div class="rodape-texto">
+        <span>Sistema <strong>G7PRO - Gestão de Eventos</strong></span>
+        <a class="rodape-contato" href="mailto:g7pro.gestao@gmail.com?subject=Contato%20pelo%20site%20G7PRO">✉️ g7pro.gestao@gmail.com</a>
+      </div>
     </footer>
   </div>
 
