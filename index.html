@@ -98,6 +98,12 @@
     .podio { padding: 10px 14px; border-top: 1px solid var(--cinza-2); display: flex; gap: 18px; flex-wrap: wrap; font-weight: 800; font-size: .9rem; }
 
     .cat-titulo { background: var(--preto-2); color: #fff; padding: 8px 14px; font-weight: 800; font-size: .85rem; }
+    .tab-atletas { table-layout: fixed; }
+    .tab-atletas td, .tab-atletas th { padding-left: 14px; padding-right: 14px; overflow-wrap: break-word; }
+    .tab-atletas col.c-sexo { width: 120px; }
+    .tab-atletas col.c-faixa { width: 130px; }
+    .tab-atletas col.c-peso { width: 100px; }
+    .tab-atletas .num { text-align: right; white-space: nowrap; }
     .vazio { background: #fff; border-radius: var(--raio); padding: 40px 20px; text-align: center; color: var(--cinza-3); font-weight: 700; }
     .status-linha { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .8rem; color: var(--cinza-4); margin: 0 0 10px 4px; }
     .erro { background: #fee2e2; color: #991b1b; border-radius: var(--raio); padding: 10px 14px; font-weight: 700; margin-bottom: 12px; display: none; }
@@ -113,6 +119,11 @@
       .barra small { display: none; }
       .esconder-mobile { display: none; }
       td, th { padding: 7px 6px; }
+      .tab-atletas col.c-sexo { width: 0; }
+      .tab-atletas td, .tab-atletas th { padding-left: 8px; padding-right: 8px; }
+      .tab-atletas col.c-faixa { width: 92px; }
+      .tab-atletas col.c-peso { width: 82px; }
+      .tab-atletas td { font-size: .82rem; }
     }
     @media print {
       body { background: #fff; }
@@ -427,18 +438,46 @@
     }
 
     // ---------------- ABA CHECAGEM DE ATLETAS ----------------
+    function pesoTxt(p) {
+      var t = String(p || "").trim();
+      if (/^\d+([.,]\d+)?$/.test(t)) return t.replace(".", ",") + " kg";
+      return t;
+    }
+    function linhaAtleta(a, sexo) {
+      return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span></td>' +
+        (sexo !== undefined ? '<td class="esconder-mobile">' + esc(sexo) + '</td>' : '') +
+        '<td>' + esc(a.faixa) + '</td><td class="num">' + esc(pesoTxt(a.peso)) + '</td></tr>';
+    }
     function renderAtletas() {
       var termo = norm(document.getElementById("fBuscaAtletas").value.trim());
       var cats = (dados.atletas && dados.atletas.porCategoria) || [];
+      var casadas = String((dados.evento && dados.evento.modoEvento) || "").toUpperCase() === "CASADAS";
+      var filtra = function (a) { return !termo || norm(a.nome + " " + a.equipe).indexOf(termo) !== -1; };
       var html = "", total = 0;
+
+      if (casadas) {
+        // Lutas casadas: não existem categorias fechadas, então mostra uma lista única em ordem alfabética
+        var todos = [];
+        cats.forEach(function (c) {
+          var sexo = String(c.categoria || "").split("|")[0].trim();
+          c.atletas.forEach(function (a) { if (filtra(a)) todos.push({ a: a, sexo: sexo }); });
+        });
+        todos.sort(function (x, y) { return String(x.a.nome).localeCompare(String(y.a.nome)); });
+        if (!todos.length) return '<div class="vazio">' + (termo ? "Nenhum atleta encontrado." : "A lista de atletas aparece aqui assim que as inscrições forem confirmadas.") + '</div>';
+        return '<div class="bloco"><div class="cat-titulo">Atletas inscritos · ' + todos.length + ' atleta(s)</div>' +
+          '<table class="tab-atletas"><colgroup><col><col class="c-sexo esconder-mobile"><col class="c-faixa"><col class="c-peso"></colgroup>' +
+          '<thead><tr><th>Atleta / Equipe</th><th class="esconder-mobile">Sexo</th><th>Faixa</th><th class="num">Peso</th></tr></thead><tbody>' +
+          todos.map(function (x) { return linhaAtleta(x.a, x.sexo); }).join("") + '</tbody></table></div>';
+      }
+
       cats.forEach(function (c) {
-        var lista = c.atletas.filter(function (a) { return !termo || norm(a.nome + " " + a.equipe).indexOf(termo) !== -1; });
+        var lista = c.atletas.filter(filtra);
         if (!lista.length) return;
         total += lista.length;
-        html += '<div class="bloco"><div class="cat-titulo">' + esc(c.categoria) + ' · ' + lista.length + ' atleta(s)</div><table><tbody>' +
-          lista.map(function (a) {
-            return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span></td><td>' + esc(a.faixa) + '</td><td>' + esc(a.peso) + '</td></tr>';
-          }).join("") + '</tbody></table></div>';
+        html += '<div class="bloco"><div class="cat-titulo">' + esc(c.categoria) + ' · ' + lista.length + ' atleta(s)</div>' +
+          '<table class="tab-atletas"><colgroup><col><col class="c-faixa"><col class="c-peso"></colgroup>' +
+          '<thead><tr><th>Atleta / Equipe</th><th>Faixa</th><th class="num">Peso</th></tr></thead><tbody>' +
+          lista.map(function (a) { return linhaAtleta(a); }).join("") + '</tbody></table></div>';
       });
       if (!total) return '<div class="vazio">' + (termo ? "Nenhum atleta encontrado." : "A lista de atletas aparece aqui assim que as inscrições forem confirmadas.") + '</div>';
       return html;
