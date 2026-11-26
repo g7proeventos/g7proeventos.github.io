@@ -202,7 +202,7 @@
         <select id="fAreaCrono"><option value="TODAS">Todas as áreas</option></select>
         <input id="fBuscaCrono" type="search" placeholder="🔍 Buscar atleta ou equipe">
       </div>
-      <div class="aviso">Os horários são previsões e podem mudar conforme o andamento do evento. Chegue com antecedência.</div>
+      <div class="aviso">Os horários são previsões e podem mudar conforme o andamento do evento. <strong>Faça a checagem com pelo menos 30 minutos de antecedência.</strong> Tolerância de atraso para W.O.: <strong><span id="toleranciaWo">15</span> minutos</strong>.</div>
       <div id="conteudoCrono"></div>
     </section>
 
@@ -316,6 +316,8 @@
       if (ev.linkMaps && String(ev.linkMaps).indexOf("https://") === 0) { aMapa.href = ev.linkMaps; aMapa.hidden = false; }
       else { aMapa.hidden = true; }
       var aInsc = document.getElementById("linkInscricao");
+      var tolWo = Number(ev.toleranciaWoMin);
+      if (tolWo > 0) document.getElementById("toleranciaWo").textContent = tolWo;
       if (ev.inscricoesAbertas) {
         // Inscrição pelo próprio site (página /inscricao/, com os termos dentro do formulário)
         aInsc.href = "../inscricao/";
