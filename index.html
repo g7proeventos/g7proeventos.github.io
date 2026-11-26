@@ -179,6 +179,7 @@
           <p class="linha" id="localEvento" hidden></p>
           <div class="botoes">
             <a class="bt bt-azul" href="evento/">📋 Cronograma, chaves e atletas</a>
+            <a class="bt bt-contorno" id="linkInscreverHome" href="inscricao/" hidden>📝 Inscrever atletas</a>
             <a class="bt bt-contorno" id="linkMapa" href="#" target="_blank" rel="noopener" hidden>🗺️ Como chegar</a>
           </div>
         </div>
@@ -297,6 +298,7 @@
       txt("dataEvento", data);
       txt("localEvento", ev.local ? ("📍 " + ev.local) : "");
       if (ev.linkMaps) { var m = document.getElementById("linkMapa"); m.href = ev.linkMaps; m.hidden = false; }
+      if (ev.inscricoesAbertas) document.getElementById("linkInscreverHome").hidden = false;
       if (!arqVideo && ev.logoUrl) document.getElementById("imgEvento").src = ev.logoUrl;
     }
 
