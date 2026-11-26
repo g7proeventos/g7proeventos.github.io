@@ -104,6 +104,9 @@
     .tab-atletas col.c-sexo { width: 110px; }
     .tab-atletas col.c-div { width: 160px; }
     .so-mobile { display: none !important; }
+    .selo-pag { display: inline-block; margin-top: 4px; font-size: .72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+    .selo-pag.ok { background: #dcfce7; color: #166534; }
+    .selo-pag.pend { background: #fef3c7; color: #92400e; }
     .cat-titulo.festival { background: #7c3aed; }
     .tab-atletas col.c-faixa { width: 150px; }
     .tab-atletas col.c-peso { width: 125px; }
@@ -313,7 +316,14 @@
       if (ev.linkMaps && String(ev.linkMaps).indexOf("https://") === 0) { aMapa.href = ev.linkMaps; aMapa.hidden = false; }
       else { aMapa.hidden = true; }
       var aInsc = document.getElementById("linkInscricao");
-      if (ev.linkInscricao && /^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//i.test(ev.linkInscricao)) {
+      if (ev.inscricoesAbertas) {
+        // Inscrição pelo próprio site (página /inscricao/, com os termos dentro do formulário)
+        aInsc.href = "../inscricao/";
+        aInsc.removeAttribute("target");
+        aInsc.setAttribute("data-site", "1");
+        aInsc.hidden = false;
+      } else if (ev.linkInscricao && /^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//i.test(ev.linkInscricao)) {
+        aInsc.removeAttribute("data-site");
         aInsc.href = ev.linkInscricao;
         aInsc.hidden = false;
       } else {
@@ -458,9 +468,18 @@
     function titulo(t) {
       return String(t || "").toLowerCase().replace(/(^|[\s\-\/(])([a-zà-ú])/g, function (m, p, l) { return p + l.toUpperCase(); }).replace(/ (E|De|Da|Do|Dos|Das) /g, function (m) { return m.toLowerCase(); });
     }
+    function seloPagamento(a) {
+      if (!(dados && dados.evento && dados.evento.controlePagamento)) return "";
+      return a.pago ? '<span class="selo-pag ok">✓ Inscrição confirmada</span>' : '<span class="selo-pag pend">⏳ Aguardando pagamento</span>';
+    }
+    function resumoPagamento(lista) {
+      if (!(dados && dados.evento && dados.evento.controlePagamento)) return "";
+      var ok = lista.filter(function (a) { return a.pago; }).length;
+      return ' · <span style="color:#86efac">' + ok + ' confirmado(s)</span> · <span style="color:#fcd34d">' + (lista.length - ok) + ' aguardando</span>';
+    }
     function linhaAtleta(a, comDivisao) {
       var extra = comDivisao ? [titulo(a.divisao), titulo(a.sexo)].filter(Boolean).join(" · ") : "";
-      return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span>' +
+      return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span>' + seloPagamento(a) +
         (extra ? '<span class="eq so-mobile">' + esc(extra) + '</span>' : '') + '</td>' +
         (comDivisao ? '<td class="esconder-mobile">' + esc(titulo(a.divisao)) + '</td><td class="esconder-mobile">' + esc(titulo(a.sexo)) + '</td>' : '') +
         '<td>' + esc(titulo(a.faixa)) + '</td><td class="num">' + esc(pesoTxt(titulo(a.peso))) + '</td></tr>';
@@ -468,11 +487,11 @@
     function blocoFestival(filtra) {
       var lista = ((dados.atletas && dados.atletas.festival) || []).filter(filtra);
       if (!lista.length) return "";
-      return '<div class="bloco"><div class="cat-titulo festival">🧸 Festival Kids · ' + lista.length + ' criança(s)</div>' +
+      return '<div class="bloco"><div class="cat-titulo festival">🧸 Festival Kids · ' + lista.length + ' criança(s)' + resumoPagamento(lista) + '</div>' +
         '<table class="tab-atletas"><colgroup><col><col class="c-faixa"></colgroup>' +
         '<thead><tr><th>Atleta / Equipe</th><th>Faixa</th></tr></thead><tbody>' +
         lista.map(function (a) {
-          return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span></td><td>' + esc(titulo(a.faixa)) + '</td></tr>';
+          return '<tr><td><b>' + esc(a.nome) + '</b><span class="eq">' + esc(a.equipe) + '</span>' + seloPagamento(a) + '</td><td>' + esc(titulo(a.faixa)) + '</td></tr>';
         }).join("") + '</tbody></table></div>';
     }
     function renderAtletas() {
@@ -496,7 +515,7 @@
         });
         todos.sort(function (x, y) { return String(x.nome).localeCompare(String(y.nome)); });
         if (todos.length) {
-          html = '<div class="bloco"><div class="cat-titulo">Atletas inscritos · ' + todos.length + ' atleta(s)</div>' +
+          html = '<div class="bloco"><div class="cat-titulo">Atletas inscritos · ' + todos.length + ' atleta(s)' + resumoPagamento(todos) + '</div>' +
             '<table class="tab-atletas"><colgroup><col><col class="c-div esconder-mobile"><col class="c-sexo esconder-mobile"><col class="c-faixa"><col class="c-peso"></colgroup>' +
             '<thead><tr><th>Atleta / Equipe</th><th class="esconder-mobile">Categoria</th><th class="esconder-mobile">Sexo</th><th>Faixa</th><th class="num">Peso</th></tr></thead><tbody>' +
             todos.map(function (a) { return linhaAtleta(a, true); }).join("") + '</tbody></table></div>';
@@ -509,7 +528,7 @@
         var lista = c.atletas.filter(filtra);
         if (!lista.length) return;
         total += lista.length;
-        html += '<div class="bloco"><div class="cat-titulo">' + esc(c.categoria) + ' · ' + lista.length + ' atleta(s)</div>' +
+        html += '<div class="bloco"><div class="cat-titulo">' + esc(c.categoria) + ' · ' + lista.length + ' atleta(s)' + resumoPagamento(lista) + '</div>' +
           '<table class="tab-atletas"><colgroup><col><col class="c-faixa"><col class="c-peso"></colgroup>' +
           '<thead><tr><th>Atleta / Equipe</th><th>Faixa</th><th class="num">Peso</th></tr></thead><tbody>' +
           lista.map(function (a) { return linhaAtleta(a, false); }).join("") + '</tbody></table></div>';
@@ -556,6 +575,7 @@
     function atualizarBotaoAceite() { aceiteContinuar.disabled = !(aceiteCheck.checked && aceiteSaude.checked); }
     var aceiteContinuar = document.getElementById("aceiteContinuar");
     document.getElementById("linkInscricao").addEventListener("click", function (e) {
+      if (this.getAttribute("data-site") === "1") return; // segue para a página de inscrição do site
       e.preventDefault();
       document.getElementById("aceiteTexto").innerHTML = textoAceite(dados && dados.evento ? dados.evento.nome : "");
       aceiteCheck.checked = false;
