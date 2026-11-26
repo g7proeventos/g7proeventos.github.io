@@ -324,11 +324,8 @@
         aInsc.removeAttribute("target");
         aInsc.setAttribute("data-site", "1");
         aInsc.hidden = false;
-      } else if (ev.linkInscricao && /^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//i.test(ev.linkInscricao)) {
-        aInsc.removeAttribute("data-site");
-        aInsc.href = ev.linkInscricao;
-        aInsc.hidden = false;
       } else {
+        // Inscrições fechadas: o botão some (o formulário Google não é mais usado)
         aInsc.hidden = true;
       }
       document.title = nome + " - G7PRO";
